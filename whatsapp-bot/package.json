@@ -1,0 +1,26 @@
+{
+  "name": "whatsapp-bot-absensi-ronda",
+  "version": "1.0.0",
+  "description": "WhatsApp Bot untuk notifikasi absensi ronda",
+  "main": "whatsapp-bot.js",
+  "scripts": {
+    "start": "node whatsapp-bot.js",
+    "dev": "nodemon whatsapp-bot.js"
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "absensi",
+    "ronda"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "whatsapp-web.js": "^1.23.0",
+    "qrcode-terminal": "^0.12.0",
+    "mysql2": "^3.6.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

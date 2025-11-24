@@ -1,0 +1,648 @@
+<?php
+// Sessions
+session_start();
+
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
+  header("location: ../../petugas_page/app/login_page.php?pesan=belum_login");
+  exit;
+}
+
+if ($_SESSION['role'] !== 'admin') {
+  echo "Anda tidak memiliki akses ke halaman ini!";
+  exit;
+}
+
+// total petugas
+include '../../koneksi_database.php';
+$query_total = "SELECT COUNT(*) as total FROM user WHERE role = 'petugas_keamanan'";
+$total_petugas = mysqli_fetch_assoc(mysqli_query($conn, $query_total))['total'];
+
+// search
+$search_keyword = "";
+$search_query = "";
+
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+  $search_keyword = mysqli_escape_string($conn, $_GET["search"]);
+  $search_query = "AND (
+  a.kecamatan LIKE '%$search_keyword%' OR
+  a.kelurahan LIKE '%$search_keyword%' OR
+  u.username LIKE '%$search_keyword%'
+  )";
+}
+
+// tabel
+$query_table = "SELECT u.id_user, u.username, a.kecamatan, a.kelurahan, a.no_rt, a.no_rw FROM user u JOIN petugas_keamanan p ON u.id_user = p.id_user JOIN alamat a ON p.id_alamat = a.id_alamat WHERE u.role = 'petugas_keamanan' $search_query ORDER BY u.username ASC";
+$result_table = mysqli_query($conn, $query_table);
+
+// profile admin
+$username = $_SESSION['username'];
+$nama = $_SESSION['nama'];
+$no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHERE id_user = '{$_SESSION['id_user']}'"))['no_telp'];
+?>
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Admin</title>
+  <link rel="icon" href="../../assets/img/logo.png" />
+  <link
+    rel="stylesheet"
+    href="../../assets/bootstrap/css/bootstrap.min.css" />
+  <script src="../../assets/bootstrap/js/bootstrap.min.js"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background-color: #e2e8f0;
+    }
+
+    .content {
+      padding: 2rem;
+      background-color: #e0e0e0;
+      min-height: 100vh;
+    }
+
+    .card-custom {
+      background: white;
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-title {
+      font-size: 32px;
+      font-weight: 700;
+    }
+
+    .caret-rotate {
+      transition: transform 0.3s;
+    }
+
+    .caret-rotate.rotate-180 {
+      transform: rotate(180deg);
+    }
+
+    .label-width {
+      width: 140px !important;
+      justify-content: left;
+    }
+
+    .label-width-password {
+      width: 250px !important;
+      justify-content: left;
+    }
+
+    .header-subtitle {
+      font-size: 18px;
+      color: #555;
+    }
+
+    #caretIcon.rotate-180 {
+      transform: rotate(180deg);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="content w-100">
+    <!-- Header -->
+    <div
+      class="d-flex flex-column flex-lg-row justify-content-start justify-content-lg-between align-items-start align-items-lg-center mb-4 row">
+      <div class="col-md-6">
+        <div>
+          <img src="..\..\assets\img\blue_logo.png" alt="Logo" class="mb-4" />
+        </div>
+        <h1 class="header-title">Welcome Back, <?= $username; ?> 👋</h1>
+      </div>
+      <div class="col-md-6 text-md-start text-lg-end">
+        <div class="position-relative d-block d-md-inline-block">
+          <button
+            id="profileButton"
+            class="btn btn-light d-flex align-items-center gap-3 px-4 py-2 rounded-3 shadow-sm fw-semibold w-100 w-md-auto"
+            style="transition: background-color 0.2s"
+            onmouseover="this.style.backgroundColor='#f8f9fa'"
+            onmouseout="this.style.backgroundColor='white'">
+            <img
+              src="../../assets/img/bg_layangan.jpeg"
+              alt="Foto Profil"
+              class="rounded-circle object-fit-cover border border-secondary"
+              style="width: 28px; height: 28px" />
+            <span class="text-dark"><?= $username; ?></span>
+            <i
+              id="caretIcon"
+              class="fa-solid fa-caret-down text-secondary ms-auto"
+              style="transition: transform 0.2s"></i>
+          </button>
+
+          <div
+            id="profileDropdown"
+            class="position-absolute w-100 mt-2 bg-white rounded-3 shadow border border-light py-2 d-none"
+            style="min-width: 12rem; z-index: 999">
+            <a
+              href="#"
+              class="d-flex align-items-center gap-2 px-4 py-2 text-decoration-none text-secondary"
+              style="transition: background-color 0.2s"
+              onmouseover="this.style.backgroundColor='#f8f9fa'"
+              onmouseout="this.style.backgroundColor='transparent'"
+              data-bs-toggle="modal"
+              data-bs-target="#profileModal">
+              <i class="fa-solid fa-user me-2"></i> Detail Profil
+            </a>
+            <hr class="my-1 border-secondary opacity-25" />
+            <a
+              href="../process/logout.php"
+              class="d-flex align-items-center gap-2 px-4 py-2 text-decoration-none text-danger"
+              style="transition: background-color 0.2s"
+              onmouseover="this.style.backgroundColor='#f8f9fa'"
+              onmouseout="this.style.backgroundColor='transparent'">
+              <i class="fa-solid fa-door-open me-2"></i> Logout
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade profile-modal"
+      id="profileModal"
+      tabindex="-1"
+      aria-labelledby="profileModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header border-0">
+            <h5 class="modal-title fw-bold" id="profileModalLabel">
+              Detail Profile
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"></button>
+          </div>
+          <div class="modal-body px-4 pb-4">
+            <!-- Profile Picture -->
+            <div class="text-center mb-4">
+              <div class="profile-avatar">
+                <i class="fas fa-user fa-4x text-secondary"></i>
+              </div>
+              <a
+                href="#"
+                class="d-block mt-2 text-decoration-none text-primary">Edit Foto Profile</a>
+            </div>
+
+            <!-- Username and Nama -->
+            <div class="row text-center mb-4">
+              <div class="col-6">
+                <h6 class="fw-bold text-muted mb-1">Username</h6>
+                <p class="fs-5 fw-semibold mb-0"><?= $username; ?></p>
+              </div>
+              <div class="col-6">
+                <h6 class="fw-bold text-muted mb-1">Nama</h6>
+                <p class="fs-5 fw-semibold mb-0"><?= $nama; ?></p>
+              </div>
+            </div>
+
+            <!-- Nomor Telp -->
+            <div class="text-center mb-4">
+              <h6 class="fw-bold text-muted mb-1">Nomor Telp</h6>
+              <p class="fs-5 fw-semibold mb-0"><?= $no_telp; ?></p>
+            </div>
+
+            <!-- Ganti Password Button -->
+            <div class="text-center">
+              <button
+                type="button"
+                class="btn btn-success px-4 py-2"
+                data-bs-toggle="modal"
+                data-bs-target="#gantiPasswordModal">
+                <i class="fas fa-key me-2"></i>Ganti Password
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal ganti password -->
+    <div
+      class="modal fade modal-fullscreen-md-down"
+      id="gantiPasswordModal"
+      tabindex="-1"
+      aria-labelledby="gantiPasswordLabel"
+      aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="gantiPasswordLabel">
+              Ganti Password
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"></button>
+          </div>
+
+          <form action="../process/ganti_password_admin.php" method="POST">
+            <div class="modal-body">
+              <!-- Password Lama -->
+              <div class="mb-3">
+                <label for="passwordLama" class="form-label fw-semibold">
+                  Password Lama <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="passwordLama"
+                    name="password_lama"
+                    required />
+                  <button
+                    class="btn btn-outline-light border text-secondary"
+                    type="button"
+                    onclick="togglePassword('passwordLama', this)">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Password Baru -->
+              <div class="mb-3">
+                <label for="passwordBaru" class="form-label fw-semibold">
+                  Password Baru <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="passwordBaru"
+                    name="password_baru"
+                    required />
+                  <button
+                    class="btn btn-outline-light border text-secondary"
+                    type="button"
+                    onclick="togglePassword('passwordBaru', this)">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Konfirmasi Password Baru -->
+              <div class="mb-3">
+                <label for="passwordKonfir" class="form-label fw-semibold">
+                  Konfirmasi Password Baru <span class="text-danger">*</span>
+                </label>
+                <div class="input-group">
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="passwordKonfir"
+                    name="password_konfir"
+                    required />
+                  <button
+                    class="btn btn-outline-light border text-secondary"
+                    type="button"
+                    onclick="togglePassword('passwordKonfir', this)">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                Close
+              </button>
+              <button type="submit" class="btn btn-primary">Edit Password</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-12 col-md-8">
+        <div class="card-custom h-100 d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start">
+            <h3 class="fw-bold fs-5 text-wrap">
+              Total Akun Petugas Keamanan di Sistem Jadwal <br />Keamanan
+              Lingkungan
+            </h3>
+            <i class="fa-solid fa-user-group fs-2 ms-3"></i>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 mt-2">
+            <p class="fs-2 fw-bold text-dark mb-0"><?= $total_petugas; ?></p>
+            <p class="fs-2 fw-bold text-dark mb-0">Akun Terdaftar</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="card-custom h-100 d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start">
+            <h3 class="fw-bold fs-5 text-wrap">
+              Cari Alamat Petugas <br />Keamanan
+            </h3>
+            <i class="fa-solid fa-search fs-2 ms-3"></i>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 mt-2">
+            <form action="" method="GET" class="w-100">
+              <div class="input-group">
+                <input
+                  type="text"
+                  name="search"
+                  class="form-control"
+                  placeholder="Kecamatan / Kelurahan..."
+                  value="<?= htmlspecialchars($search_keyword); ?>"
+                  aria-label="Cari..."
+                  aria-describedby="cari" required/>
+
+                <button class="btn btn-primary" type="submit">
+                  <i class="bi bi-arrow-right"></i>
+                </button>
+
+                <?php if (isset($_GET['search']) && $_GET['search'] != '') : ?>
+                  <a href="dashboard_page.php" class="btn btn-danger" title="Hapus Pencarian">
+                    <i class="fa-solid fa-xmark"></i>
+                  </a>
+                <?php endif; ?>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">Daftar Petugas Keamanan yang Terdaftar</h5>
+          <button
+            type="button"
+            class="btn btn-success"
+            data-bs-toggle="modal"
+            data-bs-target="#modal_tambah">
+            <i class="fas fa-plus"></i> Tambahkan Petugas
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped mb-0" id="tabel_warga">
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>Username</th>
+                <th>Kecamatan</th>
+                <th>Kelurahan</th>
+                <th>RT</th>
+                <th>RW</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php
+              if (mysqli_num_rows($result_table) > 0) {
+                $no = 1;
+                while ($row = mysqli_fetch_assoc($result_table)) {
+              ?>
+                  <tr>
+                    <td><?= $no++; ?></td>
+                    <td><?= htmlspecialchars($row['username']); ?></td>
+                    <td><?= htmlspecialchars($row['kecamatan']); ?></td>
+                    <td><?= htmlspecialchars($row['kelurahan']); ?></td>
+                    <td><?= htmlspecialchars($row['no_rt']); ?></td>
+                    <td><?= htmlspecialchars($row['no_rw']); ?></td>
+                    <td>
+                      <div class="d-flex gap-1">
+                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modal_edit<?= $row['id_user']; ?>">
+                          <i class="fas fa-edit"></i> Edit
+                        </button>
+
+                        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modal_hapus<?= $row['id_user']; ?>">
+                          <i class="fas fa-trash"></i> Hapus
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Modal Edit Akun Petugas -->
+                  <div
+                    class="modal fade modal-fullscreen-md-down"
+                    id="modal_edit<?= $row['id_user']; ?>"
+                    tabindex="-1"
+                    aria-labelledby="modal_tambah_label"
+                    aria-hidden="true">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h1 class="modal-title fs-5" id="modal_tambah_label">
+                            Edit Petugas Keamanan
+                          </h1>
+                          <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                        </div>
+                        <form action="../process/update_petugas.php" method="POST">
+                          <div class="modal-body">
+
+                            <input type="hidden" name="id_user" value="<?= $row['id_user']; ?>">
+
+                            <div class="input-group mb-3">
+                              <span class="input-group-text label-width" id="username">Username <span class="text-danger ms-1">*</span></span>
+                              <input type="text" name="username" class="form-control" value="<?= $row['username']; ?>" aria-label="username" required />
+                            </div>
+                            <div class="input-group mb-3">
+                              <span class="input-group-text label-width" id="kecamatan">Kecamatan <span class="text-danger ms-1">*</span></span>
+                              <input type="text" name="kecamatan" class="form-control" value="<?= $row['kecamatan']; ?>" aria-label="kecamatan" required />
+                            </div>
+                            <div class="input-group mb-3">
+                              <span class="input-group-text label-width" id="kelurahan">Kelurahan <span class="text-danger ms-1">*</span></span>
+                              <input type="text" name="kelurahan" class="form-control" value="<?= $row['kelurahan']; ?>" aria-label="kelurahan" required />
+                            </div>
+                            <div class="input-group mb-3">
+                              <span class="input-group-text label-width" id="rt">RT <span class="text-danger ms-1">*</span></span>
+                              <input type="text" name="rt" class="form-control" value="<?= $row['no_rt']; ?>" aria-label="rt" required />
+                            </div>
+                            <div class="input-group mb-3">
+                              <span class="input-group-text label-width" id="rw">RW <span class="text-danger ms-1">*</span></span>
+                              <input type="text" name="rw" class="form-control" value="<?= $row['no_rw']; ?>" aria-label="rw" required />
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button
+                              type="button"
+                              class="btn btn-secondary"
+                              data-bs-dismiss="modal">
+                              Close
+                            </button>
+                            <button type="submit" class="btn btn-primary">Edit Data</button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Modal Hapus -->
+                  <div
+                    class="modal fade modal-fullscreen-md-down"
+                    id="modal_hapus<?= $row['id_user']; ?>"
+                    tabindex="-1"
+                    aria-labelledby="modal_hapus_label"
+                    aria-hidden="true">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h1 class="modal-title fs-5" id="modal_hapus_label">
+                            Hapus Akun Petugas
+                          </h1>
+                          <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                        </div>
+
+                        <form action="../process/delete_petugas.php" method="POST">
+                          <div class="modal-body">
+                            <p>Apakah anda yakin ingin menghapus data Petugas?</p>
+                          </div>
+                          <input type="hidden" name="id_user" value="<?= $row['id_user']; ?>">
+                          <div class="modal-footer">
+                            <button
+                              type="button"
+                              class="btn btn-secondary"
+                              data-bs-dismiss="modal">
+                              Close
+                            </button>
+                            <button type="submit" class="btn btn-primary">Hapus Data</button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+
+                <?php }
+              } else {  ?>
+                <tr>
+                  <td colspan="7" class="text-center">Belum ada data petugas.</td>
+                </tr>
+              <?php
+              } // Akhir If
+              ?>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Tambah Akun Petugas -->
+  <div
+    class="modal fade modal-fullscreen-md-down"
+    id="modal_tambah"
+    tabindex="-1"
+    aria-labelledby="modal_tambah_label"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="modal_tambah_label">
+            Daftarkan Petugas Keamanan
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"></button>
+        </div>
+        <form action="../process/create_petugas.php" method="POST">
+          <div class="modal-body">
+            <div class="input-group mb-3">
+              <span class="input-group-text label-width" id="username">Username <span class="text-danger ms-1">*</span></span>
+              <input type="text" class="form-control" id="username" name="username" aria-label="username" required />
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text label-width" id="kecamatan">Kecamatan <span class="text-danger ms-1">*</span></span>
+              <input type="text" class="form-control" id="kecamatan" name="kecamatan" aria-label="kecamatan" required />
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text label-width" id="kelurahan">Kelurahan <span class="text-danger ms-1">*</span></span>
+              <input type="text" class="form-control" id="kelurahan" name="kelurahan" aria-label="kelurahan" required />
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text label-width" id="rt">RT <span class="text-danger ms-1">*</span></span>
+              <input type="text" class="form-control" id="rt" name="rt" aria-label="rt" required />
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text label-width" id="rw">RW <span class="text-danger ms-1">*</span></span>
+              <input type="text" class="form-control" id="rw" name="rw" aria-label="rw" required />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal">
+              Close
+            </button>
+            <button type="submit" class="btn btn-primary">Daftarkan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const profileButton = document.getElementById("profileButton");
+    const profileDropdown = document.getElementById("profileDropdown");
+    const caretIcon = document.getElementById("caretIcon");
+
+    if (profileButton && profileDropdown && caretIcon) {
+      profileButton.addEventListener("click", (e) => {
+        e.stopPropagation();
+        profileDropdown.classList.toggle("d-none");
+        caretIcon.classList.toggle("rotate-180");
+      });
+
+      window.addEventListener("click", (e) => {
+        if (
+          !profileButton.contains(e.target) &&
+          !profileDropdown.contains(e.target)
+        ) {
+          profileDropdown.classList.add("d-none");
+          caretIcon.classList.remove("rotate-180");
+        }
+      });
+    }
+
+    function togglePassword(inputId, button) {
+      const input = document.getElementById(inputId);
+      const icon = button.querySelector('i');
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+      }
+    }
+  </script>
+</body>
+
+</html>
