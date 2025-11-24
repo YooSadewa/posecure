@@ -2,7 +2,7 @@
 session_start();
 include "../../koneksi_database.php";
 
-// Validasi user sudah login
+// Validasi login
 if (!isset($_SESSION['id_user'])) {
     echo "<script>
             alert('Silakan login terlebih dahulu!');
@@ -11,154 +11,73 @@ if (!isset($_SESSION['id_user'])) {
     exit;
 }
 
-// AMBIL DATA YANG DIKIRIM FORM
-$id_user = $_POST['id_user'];
-$tanggal = $_POST['tanggal'];
-$fotoData = $_POST['foto_data'];
+if (isset($_POST['foto_data'])) {
+    $id_user = $_SESSION['id_user'];
+    $tanggal = $_POST['tanggal'];
+    $fotoData = $_POST['foto_data'];
 
-// Validasi id_user dari POST harus sama dengan SESSION
-if ($id_user != $_SESSION['id_user']) {
-    echo "<script>
-            alert('Akses tidak sah! ID User tidak sesuai.');
-            window.location.href='../app/login_page.php';
-          </script>";
-    exit;
-}
+    // Validasi foto
+    if (empty($fotoData)) {
+        echo "<script>
+                alert('Foto absensi wajib diambil!');
+                window.location.href='../app/form_absensi.php';
+              </script>";
+        exit;
+    }
 
-// Validasi format tanggal
-if (!preg_match("/^\d{4}-\d{2}-\d{2}$/", $tanggal)) {
-    echo "<script>
-            alert('Format tanggal tidak valid!');
-            window.location.href='../app/form_absensi.php';
-          </script>";
-    exit;
-}
+    // Cek sudah absen hari ini
+    $cek = mysqli_query($conn, "SELECT * FROM absensi WHERE id_user='$id_user' AND tanggal='$tanggal'");
+    if (mysqli_num_rows($cek) > 0) {
+        echo "<script>
+                alert('Anda sudah melakukan absensi hari ini!');
+                window.location.href='../app/dashboard_page.php';
+              </script>";
+        exit;
+    }
 
-// VALIDASI FOTO
-if (empty($fotoData)) {
-    echo "<script>
-            alert('Foto absensi wajib diambil!'); 
-            window.location.href='../app/form_absensi.php';
-          </script>";
-    exit;
-}
-
-// Validasi format base64
-if (!preg_match('/^data:image\/(png|jpeg|jpg);base64,/', $fotoData)) {
-    echo "<script>
-            alert('Format foto tidak valid!');
-            window.location.href='../app/form_absensi.php';
-          </script>";
-    exit;
-}
-
-// CEK APAKAH SUDAH ABSEN HARI INI (Prepared Statement)
-$stmt_cek = $conn->prepare("SELECT id_absensi FROM absensi WHERE id_user = ? AND tanggal = ?");
-
-if (!$stmt_cek) {
-    echo "<script>
-            alert('Error database: " . htmlspecialchars($conn->error) . "');
-            window.location.href='../app/form_absensi.php';
-          </script>";
-    exit;
-}
-
-$stmt_cek->bind_param("ss", $id_user, $tanggal);
-$stmt_cek->execute();
-$result_cek = $stmt_cek->get_result();
-
-if ($result_cek->num_rows > 0) {
-    echo "<script>
-            alert('Anda sudah melakukan absensi hari ini!');
-            window.location.href='../app/dashboard_page.php';
-          </script>";
-    $stmt_cek->close();
-    $conn->close();
-    exit;
-}
-$stmt_cek->close();
-
-// GENERATE ID ABSENSI UNIK (10 karakter sesuai char(10))
-$randomNum = str_pad(rand(0, 9999999), 7, '0', STR_PAD_LEFT);
-$id_absensi = 'ABS' . $randomNum;
-
-// Cek apakah ID sudah ada (untuk memastikan unique)
-$cekId = $conn->prepare("SELECT id_absensi FROM absensi WHERE id_absensi = ?");
-
-if (!$cekId) {
-    echo "<script>
-            alert('Error database: " . htmlspecialchars($conn->error) . "');
-            window.location.href='../app/form_absensi.php';
-          </script>";
-    exit;
-}
-
-$cekId->bind_param("s", $id_absensi);
-$cekId->execute();
-$result = $cekId->get_result();
-
-// Loop sampai dapat ID yang unik
-while ($result->num_rows > 0) {
+    // Generate ID absensi
     $randomNum = str_pad(rand(0, 9999999), 7, '0', STR_PAD_LEFT);
     $id_absensi = 'ABS' . $randomNum;
 
-    $cekId->bind_param("s", $id_absensi);
-    $cekId->execute();
-    $result = $cekId->get_result();
-}
-$cekId->close();
+    // Proses foto base64 -> simpan sebagai file
+    $fotoData = preg_replace('/^data:image\/\w+;base64,/', '', $fotoData);
+    $fotoData = str_replace(' ', '+', $fotoData);
+    $fotoBinary = base64_decode($fotoData);
 
-// PROSES FOTO - HAPUS PREFIX BASE64
-$fotoData = str_replace("data:image/png;base64,", "", $fotoData);
-$fotoData = str_replace("data:image/jpeg;base64,", "", $fotoData);
-$fotoData = str_replace("data:image/jpg;base64,", "", $fotoData);
-$fotoData = str_replace(" ", "+", $fotoData);
+    // Nama file foto (ini yang disimpan ke database VARCHAR)
+    $namaFoto = $id_absensi . '_' . time() . '.png';
+    $folderPath = '../../assets/warga_img/absensi/';
 
-// DECODE BASE64 KE BINARY
-$fotoBinary = base64_decode($fotoData);
+    // Buat folder jika belum ada
+    if (!file_exists($folderPath)) {
+        mkdir($folderPath, 0777, true);
+    }
 
-// Validasi hasil decode
-if ($fotoBinary === false) {
-    echo "<script>
-            alert('Gagal memproses foto!');
-            window.location.href='../app/form_absensi.php';
-          </script>";
-    exit;
-}
+    $filePath = $folderPath . $namaFoto;
 
-// SIMPAN DATA KE DATABASE menggunakan prepared statement
-$stmt = $conn->prepare("INSERT INTO absensi (id_absensi, tanggal, foto_absensi, id_user) VALUES (?, ?, ?, ?)");
+    // Simpan file foto ke server
+    if (file_put_contents($filePath, $fotoBinary)) {
+        // Insert NAMA FILE (VARCHAR) ke database, bukan binary
+        $query = mysqli_query($conn, "INSERT INTO absensi (id_absensi, tanggal, foto_absensi, id_user) 
+                                       VALUES ('$id_absensi', '$tanggal', '$namaFoto', '$id_user')");
 
-if ($stmt) {
-    // Bind parameters
-    $null = NULL;
-    $stmt->bind_param("ssbs", $id_absensi, $tanggal, $null, $id_user);
-
-    // Kirim data BLOB
-    $stmt->send_long_data(2, $fotoBinary);
-
-    // Eksekusi query
-    $hasil = $stmt->execute();
-
-    // CEK BERHASIL / GAGAL
-    if ($hasil) {
-        echo "<script>
-                alert('Absensi berhasil disimpan!');
-                window.location.href='../app/dashboard_page.php';
-              </script>";
+        if ($query) {
+            echo "<script>
+                    alert('Absensi berhasil disimpan!');
+                    window.location.href='../app/dashboard_page.php';
+                  </script>";
+        } else {
+            echo "<script>
+                    alert('Gagal menyimpan absensi ke database!');
+                    window.location.href='../app/form_absensi.php';
+                  </script>";
+        }
     } else {
         echo "<script>
-                alert('Gagal menyimpan absensi: " . htmlspecialchars($stmt->error) . "');
+                alert('Gagal menyimpan foto!');
                 window.location.href='../app/form_absensi.php';
               </script>";
     }
-
-    $stmt->close();
-} else {
-    echo "<script>
-            alert('Error prepare statement: " . htmlspecialchars($conn->error) . "');
-            window.location.href='../app/form_absensi.php';
-          </script>";
 }
 
 $conn->close();
