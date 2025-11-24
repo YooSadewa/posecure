@@ -7,6 +7,8 @@ if (!isset($_SESSION['id_user'])) {
   exit;
 }
 
+$id_alamat = $_SESSION['id_alamat'];
+
 $tahunDipilih = isset($_GET['year']) ? $_GET['year'] : date('Y');
 
 $qTotalInsiden = mysqli_query($conn, "
@@ -20,8 +22,9 @@ $jumlahPerBulan = [];
 for ($b = 1; $b <= 12; $b++) {
   $q = mysqli_query($conn, "
         SELECT COUNT(*) AS jumlah 
-        FROM insiden_keamanan 
-        WHERE MONTH(tanggal) = '$b' AND YEAR(tanggal) = '$tahunDipilih'
+        FROM insiden_keamanan JOIN warga ON insiden_keamanan.id_user = warga.id_user
+        JOIN alamat ON warga.id_alamat = alamat.id_alamat
+        WHERE MONTH(tanggal) = '$b' AND YEAR(tanggal) = '$tahunDipilih' AND warga.id_alamat = '$id_alamat'
     ");
   $d = mysqli_fetch_assoc($q);
   $jumlahPerBulan[] = $d['jumlah'];

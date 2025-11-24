@@ -55,6 +55,7 @@
 $hari_ronda = $_SESSION['hari_ronda'];
 $nama = $_SESSION['nama'];
 $id_warga = $_SESSION['id_user'];
+$id_alamat = $_SESSION['id_alamat'];
 // $foto = $_SESSION['foto'];
 include '../../koneksi_database.php';
 if (!isset($_SESSION['id_user'])) {
@@ -68,7 +69,8 @@ if (!empty($hari_ronda)) {
   $anggota_query = mysqli_query($conn, "
         SELECT * FROM user 
         JOIN warga ON user.id_user = warga.id_user 
-        WHERE warga.hari_ronda = '$hari_ronda'
+        JOIN alamat ON warga.id_alamat = alamat.id_alamat
+        WHERE warga.hari_ronda = '$hari_ronda' AND alamat.id_alamat = '$id_alamat'
     ");
 } else {
   $anggota_query = false;
