@@ -113,7 +113,7 @@ if (!isset($_SESSION['id_user'])) {
                                         <i class="bi bi-image-fill text-primary me-1"></i>
                                         Bukti Foto
                                     </label>
-                                    <input type="file" class="form-control form-control-lg" id="foto" name="foto" accept="image/*" required>
+                                    <input type="file" class="form-control form-control-lg" id="foto" name="foto" accept="image/*">
                                     <div class="form-text mt-2">
                                         <i class="bi bi-info-circle me-1"></i>
                                         Format: JPG, PNG, atau JPEG (Maks. 5MB)

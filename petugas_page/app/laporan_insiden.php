@@ -208,17 +208,36 @@ $bulanList = [
                                     <td><?= $data['jenis_insiden']; ?></td>
                                     <td><?= $data['keterangan']; ?></td>
                                     <td><?= $data['nama']; ?></td>
-                                    <td>
-                                        <button class="badge-photo btn btn-success btn-sm no-print"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#photoModal"
-                                            data-photo="<?= $data['foto']; ?>">
-                                            <i class="fa-solid fa-eye"></i> Lihat Foto
-                                        </button>
+                                    <td class="text-center">
+                                        <?php if ($data["foto"]): ?>
+                                            <button class="btn btn-sm badge-photo"
+                                                style="background-color: #198754; border-color: #198754; color: #fff;"
+                                                data-bs-toggle="modal" data-bs-target="#photoModal<?= $no; ?>">
+                                                <i class="bi bi-eye me-1"></i> Lihat Foto
+                                            </button>
+
+                                            <!-- Modal Foto -->
+                                            <div class="modal fade" id="photoModal<?= $no; ?>" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                                    <div class="modal-content border-0 shadow-lg">
+                                                        <div class="modal-header text-white" style="background-color:#198754;">
+                                                            <h5 class="modal-title"><i class="bi bi-image me-2"></i>Bukti Foto Insiden</h5>
+                                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body text-center p-4">
+                                                            <img src="data:image/jpeg;base64,<?= base64_encode($data['foto']); ?>" class="img-fluid rounded" alt="Bukti Foto">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php else: ?>
+                                            <span class="text-muted">Tidak ada foto</span>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
-                            <?php endwhile; ?>
-
+                            <?php $no++;
+                            endwhile; ?>
+                        </tbody>
                         </tbody>
                     </table>
                 </div>
