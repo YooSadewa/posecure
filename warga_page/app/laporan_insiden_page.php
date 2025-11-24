@@ -7,6 +7,7 @@ if (!isset($_SESSION['id_user'])) {
     exit;
 }
 
+$id_alamat = $_SESSION['id_alamat'];
 ?>
 
 <!DOCTYPE html>
@@ -72,9 +73,12 @@ if (!isset($_SESSION['id_user'])) {
                             <tbody>
                                 <?php
                                 $query = mysqli_query($conn, "
-                                    SELECT insiden_keamanan.*, user.nama
+                                    SELECT insiden_keamanan.*, user.`nama`
                                     FROM insiden_keamanan
                                     JOIN user ON insiden_keamanan.id_user = user.id_user
+                                    JOIN warga ON user.id_user = warga.id_user
+                                    JOIN alamat ON warga.id_alamat = alamat.id_alamat
+                                    WHERE warga.id_alamat = '$id_alamat'
                                     ORDER BY tanggal DESC, jam DESC
                                 ");
                                 $no = 1;
