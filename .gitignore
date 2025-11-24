@@ -1,6 +1,20 @@
-﻿whatsapp-bot/node_modules/
+﻿# Node modules
+whatsapp-bot/node_modules/
+node_modules/
+
+# WhatsApp session & cache (SEMUA DI-IGNORE!)
 whatsapp-bot/whatsapp-session/
 whatsapp-bot/.wwebjs_auth/
-node_modules/
+whatsapp-bot/.wwebjs_cache/
+
+# Environment
 .env
+.env.local
+
+# Logs
 *.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
