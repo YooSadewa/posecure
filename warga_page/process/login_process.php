@@ -17,6 +17,7 @@ if ($user->num_rows > 0) {
         $_SESSION['no_telp'] = $data['no_telp'];
         $_SESSION['hari_ronda'] = $data_warga['hari_ronda'];
         $_SESSION['foto'] = $data['foto'];
+        $_SESSION['id_alamat'] = $data_warga['id_alamat'];
         echo "<script>
                 alert('Login Berhasil');
                 window.location.href = '../app/dashboard_page.php';
