@@ -125,22 +125,22 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
       </div>
       <div class="col-md-6 text-md-start text-lg-end">
         <div class="position-relative d-block d-md-inline-block">
-          <button
-            id="profileButton"
-            class="btn btn-light d-flex align-items-center gap-3 px-4 py-2 rounded-3 shadow-sm fw-semibold w-100 w-md-auto"
-            style="transition: background-color 0.2s"
-            onmouseover="this.style.backgroundColor='#f8f9fa'"
-            onmouseout="this.style.backgroundColor='white'">
-            <img
-              src="../../assets/img/bg_layangan.jpeg"
-              alt="Foto Profil"
-              class="rounded-circle object-fit-cover border border-secondary"
-              style="width: 28px; height: 28px" />
+          <button id="profileButton" class="btn btn-light d-flex align-items-center gap-3 px-4 py-2 rounded-3 shadow-sm fw-semibold w-100 w-md-auto" ...>
+
+            <?php if (isset($_SESSION['foto']) && !empty($_SESSION['foto'])) : ?>
+              <img
+                src="../../assets/admin_img/profile_img/<?= $_SESSION['foto']; ?>"
+                alt="Foto Profil"
+                class="rounded-circle object-fit-cover border border-secondary"
+                style="width: 28px; height: 28px" />
+            <?php else : ?>
+              <div class="rounded-circle border border-secondary d-flex justify-content-center align-items-center bg-light" style="width: 28px; height: 28px">
+                <i class="fas fa-user text-secondary" style="font-size: 14px;"></i>
+              </div>
+            <?php endif; ?>
+
             <span class="text-dark"><?= $username; ?></span>
-            <i
-              id="caretIcon"
-              class="fa-solid fa-caret-down text-secondary ms-auto"
-              style="transition: transform 0.2s"></i>
+            <i id="caretIcon" class="fa-solid fa-caret-down text-secondary ms-auto"></i>
           </button>
 
           <div
@@ -171,64 +171,70 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
       </div>
     </div>
 
-    <div
-      class="modal fade profile-modal"
-      id="profileModal"
-      tabindex="-1"
-      aria-labelledby="profileModalLabel"
-      aria-hidden="true">
+    <div class="modal fade profile-modal" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header border-0">
-            <h5 class="modal-title fw-bold" id="profileModalLabel">
-              Detail Profile
-            </h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"></button>
+            <h5 class="modal-title fw-bold" id="profileModalLabel">Detail Profile</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body px-4 pb-4">
-            <!-- Profile Picture -->
-            <div class="text-center mb-4">
-              <div class="profile-avatar">
-                <i class="fas fa-user fa-4x text-secondary"></i>
-              </div>
-              <a
-                href="#"
-                class="d-block mt-2 text-decoration-none text-primary">Edit Foto Profile</a>
-            </div>
 
-            <!-- Username and Nama -->
-            <div class="row text-center mb-4">
-              <div class="col-6">
-                <h6 class="fw-bold text-muted mb-1">Username</h6>
-                <p class="fs-5 fw-semibold mb-0"><?= $username; ?></p>
-              </div>
-              <div class="col-6">
-                <h6 class="fw-bold text-muted mb-1">Nama</h6>
-                <p class="fs-5 fw-semibold mb-0"><?= $nama; ?></p>
-              </div>
-            </div>
+          <form action="../process/update_profil_admin.php" method="POST" enctype="multipart/form-data">
+            <div class="modal-body px-4 pb-4">
 
-            <!-- Nomor Telp -->
-            <div class="text-center mb-4">
-              <h6 class="fw-bold text-muted mb-1">Nomor Telp</h6>
-              <p class="fs-5 fw-semibold mb-0"><?= $no_telp; ?></p>
-            </div>
+              <div class="text-center mb-4">
+                <?php if (isset($_SESSION['foto']) && !empty($_SESSION['foto'])) : ?>
+                  <div class="profile-avatar mb-2 d-flex justify-content-center align-items-center mx-auto rounded-circle border border-secondary overflow-hidden" style="width: 100px; height: 100px; background-color: #f8f9fa;">
+                    <img src="../../assets/admin_img/profile_img/<?= $_SESSION['foto']; ?>" alt="Foto Profil" class="w-100 h-100 object-fit-cover">
+                  <?php else : ?>
+                    <div class="profile-avatar">
+                      <i class="fas fa-user fa-4x text-secondary"></i>
+                    <?php endif; ?>
 
-            <!-- Ganti Password Button -->
-            <div class="text-center">
-              <button
-                type="button"
-                class="btn btn-success px-4 py-2"
-                data-bs-toggle="modal"
-                data-bs-target="#gantiPasswordModal">
-                <i class="fas fa-key me-2"></i>Ganti Password
-              </button>
-            </div>
-          </div>
+                    </div>
+
+                    <a href="#" id="triggerEditFoto" class="d-block mt-2 text-decoration-none text-primary" onclick="tampilkanUpload(event)">
+                      Edit Foto Profile
+                    </a>
+
+                    <div id="divUploadFoto" class="d-none mt-3">
+                      <div class="input-group">
+                        <input type="file" name="foto_admin" class="form-control form-control-sm" accept=".jpg, .jpeg, .png">
+                        <button type="submit" class="btn btn-primary btn-sm">Simpan</button>
+                      </div>
+                      <small class="text-muted d-block text-start mt-1">Max: 2MB (JPG/PNG)</small>
+
+                      <a href="#" class="text-danger small text-decoration-none mt-1 d-block" onclick="batalkanUpload(event)">
+                        Batal
+                      </a>
+                    </div>
+                  </div>
+
+                  <div class="row text-center mb-4">
+                    <div class="col-6">
+                      <h6 class="fw-bold text-muted mb-1">Username</h6>
+                      <p class="fs-5 fw-semibold mb-0"><?= $_SESSION['username']; ?></p>
+                    </div>
+                    <div class="col-6">
+                      <h6 class="fw-bold text-muted mb-1">Nama</h6>
+                      <p class="fs-5 fw-semibold mb-0"><?= $_SESSION['nama']; ?></p>
+                    </div>
+                  </div>
+
+                  <div class="text-center mb-4">
+                    <h6 class="fw-bold text-muted mb-1">Nomor Telp</h6>
+                    <p class="fs-5 fw-semibold mb-0"><?= $no_telp; ?></p>
+                  </div>
+
+                  <div class="text-center">
+                    <button type="button" class="btn btn-success px-4 py-2" data-bs-toggle="modal" data-bs-target="#gantiPasswordModal">
+                      <i class="fas fa-key me-2"></i> Ganti Password
+                    </button>
+                  </div>
+
+              </div>
+          </form>
+
         </div>
       </div>
     </div>
@@ -366,7 +372,7 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
                   placeholder="Kecamatan / Kelurahan..."
                   value="<?= htmlspecialchars($search_keyword); ?>"
                   aria-label="Cari..."
-                  aria-describedby="cari" required/>
+                  aria-describedby="cari" required />
 
                 <button class="btn btn-primary" type="submit">
                   <i class="bi bi-arrow-right"></i>
@@ -641,6 +647,23 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
         icon.classList.remove('bi-eye-slash');
         icon.classList.add('bi-eye');
       }
+    }
+
+    // Menampilkan Input File
+    function tampilkanUpload(e) {
+      e.preventDefault(); // Mencegah link refresh halaman
+      document.getElementById('triggerEditFoto').classList.add('d-none'); // Sembunyikan link
+      document.getElementById('divUploadFoto').classList.remove('d-none'); // Munculkan input
+    }
+
+    // Membatalkan Upload
+    function batalkanUpload(e) {
+      e.preventDefault();
+      document.getElementById('divUploadFoto').classList.add('d-none'); // Sembunyikan input
+      document.getElementById('triggerEditFoto').classList.remove('d-none'); // Munculkan link lagi
+
+      // Reset nilai input file
+      document.querySelector('input[name="foto_admin"]').value = '';
     }
   </script>
 </body>
