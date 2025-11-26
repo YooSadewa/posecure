@@ -7,6 +7,7 @@ if (!isset($_SESSION['id_user'])) {
   exit;
 }
 
+$id_user = $_SESSION['id_user'];
 $id_alamat = $_SESSION['id_alamat'];
 
 $tahunDipilih = isset($_GET['year']) ? $_GET['year'] : date('Y');
@@ -32,6 +33,55 @@ for ($b = 1; $b <= 12; $b++) {
 
 $tahunSekarang = date('Y');
 $tahunList = [$tahunSekarang, $tahunSekarang - 1, $tahunSekarang - 2];
+
+$qRonda = mysqli_query($conn, "
+    SELECT hari_ronda 
+    FROM warga 
+    WHERE id_user = '$id_user'
+");
+$dataRonda = mysqli_fetch_assoc($qRonda);
+$hariRonda = $dataRonda['hari_ronda'];
+
+$hariIndoKeInggris = [
+  'minggu' => 'sunday',
+  'senin' => 'monday',
+  'selasa' => 'tuesday',
+  'rabu' => 'wednesday',
+  'kamis' => 'thursday',
+  'jumat' => 'friday',
+  'sabtu' => 'saturday'
+];
+
+$hariInggrisKeIndo = [
+  'sunday' => 'Minggu',
+  'monday' => 'Senin',
+  'tuesday' => 'Selasa',
+  'wednesday' => 'Rabu',
+  'thursday' => 'Kamis',
+  'friday' => 'Jumat',
+  'saturday' => 'Sabtu'
+];
+
+$hariBesok = strtolower(date('l', strtotime('+1 day'))); // Besok dalam bahasa Inggris
+
+$tampilkanAlert = false;
+$namaHariRonda = '';
+
+if (!empty($hariRonda) && $hariRonda !== 'NULL') {
+  // Konversi hari_ronda dari database (Indonesia) ke bahasa Inggris
+  $hariRondaLower = strtolower(trim($hariRonda));
+
+  // Cek apakah ada di mapping
+  if (isset($hariIndoKeInggris[$hariRondaLower])) {
+    $hariRondaInggris = $hariIndoKeInggris[$hariRondaLower];
+
+    // Bandingkan dengan hari besok
+    if ($hariBesok === $hariRondaInggris) {
+      $tampilkanAlert = true;
+      $namaHariRonda = $hariInggrisKeIndo[$hariBesok];
+    }
+  }
+}
 ?>
 
 
@@ -102,6 +152,22 @@ $tahunList = [$tahunSekarang, $tahunSekarang - 1, $tahunSekarang - 2];
       border-color: #049055;
       box-shadow: 0 0 0 0.25rem rgba(4, 144, 85, 0.25);
     }
+
+    .alert-ronda {
+      animation: slideDown 0.5s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   </style>
 </head>
 
@@ -112,6 +178,25 @@ $tahunList = [$tahunSekarang, $tahunSekarang - 1, $tahunSekarang - 2];
   <div class="container-fluid pb-2">
     <div class="row justify-content-center">
       <div class="col-lg-12">
+
+        <?php if ($tampilkanAlert): ?>
+          <!-- Alert Pengingat Ronda -->
+          <div class="alert alert-warning alert-dismissible fade show alert-ronda shadow-sm mb-4" role="alert">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
+              <div>
+                <h5 class="alert-heading mb-1">
+                  <i class="bi bi-bell-fill me-2"></i>Pengingat Jadwal Ronda
+                </h5>
+                <p class="mb-0">
+                  <strong>Besok (<?= $namaHariRonda ?>)</strong> adalah jadwal ronda Anda. Jangan lupa untuk berpartisipasi dalam kegiatan ronda malam!
+                </p>
+              </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <?php endif; ?>
+
         <div class="card shadow-lg border-0 rounded-4">
           <div class="card-header text-white text-center py-4 rounded-top-4" style="background-color: #1E3A8A;">
             <h4 class="mb-2 fw-bold">
