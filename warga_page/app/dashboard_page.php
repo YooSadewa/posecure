@@ -293,6 +293,19 @@ if (!empty($hariRonda) && $hariRonda !== 'NULL') {
       window.location.href = "?year=" + year;
     }
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <?php if (isset($_SESSION['alert'])) : ?>
+      <script>
+          Swal.fire({
+              icon: '<?= $_SESSION['alert']['type'] ?>',
+              title: '<?= $_SESSION['alert']['title'] ?>',
+              text: '<?= $_SESSION['alert']['message'] ?>',
+              confirmButtonColor: '#1E3A8A'
+          });
+      </script>
+      <?php unset($_SESSION['alert']); ?>
+  <?php endif; ?>
+  
 </body>
 
 </html>

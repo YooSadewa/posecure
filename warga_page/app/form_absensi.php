@@ -19,15 +19,16 @@ $stmt_cek->execute();
 $result_cek = $stmt_cek->get_result();
 
 if ($result_cek->num_rows > 0) {
-    echo "<script>
-            alert('Anda sudah melakukan absensi hari ini!');
-            window.location.href='dashboard_page.php';
-          </script>";
+    $_SESSION['alert'] = [
+        'type' => 'info',
+        'title' => 'Sudah Absen',
+        'message' => 'Anda sudah melakukan absensi hari ini!'
+    ];
     $stmt_cek->close();
     $conn->close();
+    header("location: dashboard_page.php");
     exit;
 }
-$stmt_cek->close();
 
 $query_warga = mysqli_query($conn, "SELECT w.*, u.nama 
                                     FROM warga w 
@@ -52,10 +53,12 @@ $hariMap = [
 $hariIniIndo = $hariMap[$hariIni];  
 
 if (strtolower($hariIniIndo) !== strtolower($hari_ronda)) {
-    echo "<script>
-            alert('Hari ini bukan jadwal ronda Anda!');
-            window.location.href='dashboard_page.php';
-          </script>";
+    $_SESSION['alert'] = [
+        'type' => 'warning',
+        'title' => 'Bukan Jadwal Anda',
+        'message' => 'Hari ini (' . ucfirst($hariIniIndo) . ') bukan jadwal ronda Anda. Jadwal Anda: ' . ucfirst($hari_ronda)
+    ];
+    header("location: dashboard_page.php");
     exit;
 }
 ?>
@@ -272,8 +275,8 @@ if (strtolower($hariIniIndo) !== strtolower($hari_ronda)) {
             </div>
         </div>
     </div>
-
-
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const formAbsensi = document.getElementById("formAbsensi");
@@ -352,11 +355,17 @@ if (strtolower($hariIniIndo) !== strtolower($hari_ronda)) {
                 openCameraBtn.click();
             });
 
-            formAbsensi.addEventListener("submit", function(e) {
+           formAbsensi.addEventListener("submit", function(e) {
                 e.preventDefault();
 
                 if (!photoTaken) {
-                    errorModal.show();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Tidak Dapat Melakukan Absensi',
+                        text: 'Anda belum mengambil foto bukti absensi!',
+                        confirmButtonText: 'OK, Mengerti',
+                        confirmButtonColor: '#1E3A8A'
+                    });
                 } else {
                     this.submit();
                 }
@@ -391,6 +400,17 @@ if (strtolower($hariIniIndo) !== strtolower($hari_ronda)) {
             });
         });
     </script>
+    <?php if (isset($_SESSION['alert'])) : ?>
+       <script>
+        Swal.fire({
+            icon: '<?= $_SESSION['alert']['type'] ?>',
+            title: '<?= $_SESSION['alert']['title'] ?>',
+            text: '<?= $_SESSION['alert']['message'] ?>',
+            confirmButtonColor: '#1E3A8A'
+        });
+    </script>
+        <?php unset($_SESSION['alert']); ?>
+    <?php endif; ?>
 </body>
 
 </html>
