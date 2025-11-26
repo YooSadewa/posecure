@@ -11,6 +11,17 @@ if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'petugas_keamanan') {
 
 $id_user = $_SESSION['id_user'];
 
+// Deteksi halaman aktif
+$current_page = basename($_SERVER['PHP_SELF']);
+$page_titles = [
+  'dashboard.php' => 'Dashboard',
+  'daftar_akun_warga.php' => 'Daftar Akun Warga',
+  'jadwal_ronda.php' => 'Jadwal Ronda',
+  'jadwal_ronda_bulanan.php' => 'Riwayat Absensi Ronda',
+  'laporan_insiden.php' => 'Laporan Insiden Keamanan',
+];
+$page_subtitle = isset($page_titles[$current_page]) ? $page_titles[$current_page] : 'Dashboard';
+
 $query = "
 SELECT 
     user.id_user,
@@ -31,7 +42,6 @@ WHERE user.id_user = '$id_user'
 $result = mysqli_query($conn, $query);
 $data = mysqli_fetch_assoc($result);
 
-// FOTO PROFIL DARI DATABASE (BLOB)
 $foto_profil = $data['foto']
   ? "data:image/jpeg;base64," . base64_encode($data['foto'])
   : "../../assets/img/default_user.png";
@@ -46,7 +56,7 @@ $foto_profil = $data['foto']
       Welcome Back,<br />
       <?= $data['nama'] ?> 👋
     </h1>
-    <p class="header-subtitle mt-2">Dashboard</p>
+    <p class="header-subtitle mt-2"><?= $page_subtitle ?></p>
   </div>
 
   <div class="col-md-6 text-md-end">
