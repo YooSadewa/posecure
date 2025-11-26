@@ -33,6 +33,7 @@ if ($row > 0) {
     $_SESSION['username'] = $data['username'];
     $_SESSION['nama'] = $data['nama'];
     $_SESSION['role'] = $data['role'];
+    $_SESSION['foto'] = $data['foto'];
 
     if ($data["role"] === "petugas_keamanan") {
       $query_petugas = mysqli_query($conn, "SELECT id_alamat FROM petugas_keamanan WHERE id_user = '" . $data['id_user'] . "'");
