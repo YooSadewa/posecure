@@ -8,6 +8,7 @@ $blok_rumah = $_POST['blok_rumah'];
 $no_kk      = $_POST['no_kk'];
 $username   = $blok_rumah;
 $password   = password_hash($blok_rumah, PASSWORD_DEFAULT);
+$id_alamat = $_SESSION['id_alamat'];
 
 /* Upload Foto */
 $foto = null;
@@ -49,20 +50,6 @@ if (!$queryUser) {
     die("Error user: " . mysqli_error($conn));
 }
 
-/* Mengambil id alamat */
-$getAlamat = mysqli_query($conn, "
-    SELECT id_alamat 
-    FROM alamat
-    LIMIT 1
-");
-
-$dataAlamat = mysqli_fetch_assoc($getAlamat);
-
-if (!$dataAlamat) {
-    die("Error: Tidak ada data alamat di database.");
-}
-
-$id_alamat = $dataAlamat['id_alamat'];
 
 /* Insert Warga */
 $queryWarga = mysqli_query($conn, "
