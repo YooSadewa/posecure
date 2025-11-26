@@ -269,16 +269,16 @@ $hari = !empty($data['hari_ronda']) ? $data['hari_ronda'] : "Hari Ronda Belum Di
   aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="gantiPasswordLabel">Ganti Password</h1>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form action="">
+      <form action="../process/ganti_password_proses.php" method="POST">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="gantiPasswordLabel">Ganti Password</h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
           <!-- Password Lama -->
           <div class="mb-3">
             <label for="passwordLama" class="form-label fw-semibold">
@@ -289,6 +289,7 @@ $hari = !empty($data['hari_ronda']) ? $data['hari_ronda'] : "Hari Ronda Belum Di
                 type="password"
                 class="form-control"
                 id="passwordLama"
+                name="password_lama"
                 required />
               <button class="btn btn-outline-light border text-secondary" type="button" onclick="togglePassword('passwordLama', this)">
                 <i class="bi bi-eye"></i>
@@ -306,6 +307,7 @@ $hari = !empty($data['hari_ronda']) ? $data['hari_ronda'] : "Hari Ronda Belum Di
                 type="password"
                 class="form-control"
                 id="passwordBaru"
+                name="password_baru"
                 required />
               <button class="btn btn-outline-light border text-secondary" type="button" onclick="togglePassword('passwordBaru', this)">
                 <i class="bi bi-eye"></i>
@@ -323,20 +325,23 @@ $hari = !empty($data['hari_ronda']) ? $data['hari_ronda'] : "Hari Ronda Belum Di
                 type="password"
                 class="form-control"
                 id="passwordKonfir"
+                name="password_konfirmasi"
                 required />
               <button class="btn btn-outline-light border text-secondary" type="button" onclick="togglePassword('passwordKonfir', this)">
                 <i class="bi bi-eye"></i>
               </button>
             </div>
           </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Close
-        </button>
-        <button type="button" class="btn btn-primary">Edit Password</button>
-      </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Close
+          </button>
+          <button type="submit" class="btn btn-primary" name="submit">
+            Edit Password
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -378,5 +383,18 @@ $hari = !empty($data['hari_ronda']) ? $data['hari_ronda'] : "Hari Ronda Belum Di
       icon.classList.add('bi-eye');
     }
   }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const modalParam = urlParams.get('modal');
+
+    if (modalParam === 'profile') {
+      const profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
+      profileModal.show();
+    } else if (modalParam === 'gantiPassword') {
+      const gantiPasswordModal = new bootstrap.Modal(document.getElementById('gantiPasswordModal'));
+      gantiPasswordModal.show();
+    }
+  });
 </script>
 </div>
