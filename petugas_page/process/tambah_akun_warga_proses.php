@@ -6,8 +6,6 @@ $nama       = $_POST['nama'];
 $no_telp    = $_POST['no_telp'];
 $blok_rumah = $_POST['blok_rumah'];
 $no_kk      = $_POST['no_kk'];
-
-
 $username   = $blok_rumah;
 $password   = password_hash($blok_rumah, PASSWORD_DEFAULT);
 
@@ -73,14 +71,23 @@ $queryWarga = mysqli_query($conn, "
 ");
 
 if (!$queryWarga) {
-    die("Error warga: " . mysqli_error($conn));
+    $_SESSION['alert'] = [
+    'type' => 'error',
+    'title' => 'Gagal!',
+    'message' => 'Data warga gagal ditambahkan!'
+];
+
+header("Location: ../app/daftar_akun_warga.php");
+exit;
 }
 
-echo "
-<script>
-    alert('Data warga berhasil disimpan.');
-    window.location.href = '../app/daftar_akun_warga.php';
-</script>
-";
+$_SESSION['alert'] = [
+    'type' => 'success',
+    'title' => 'Berhasil!',
+    'message' => 'Data warga berhasil ditambahkan!'
+];
+
+header("Location: ../app/daftar_akun_warga.php");
+exit;
 
 ?>

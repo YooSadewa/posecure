@@ -1,4 +1,4 @@
-<?php 
+<?php
 session_start();
 include "../../koneksi_database.php";
 
@@ -156,7 +156,7 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
                                                 </div>
 
                                                 <div class="input-group mb-3">
-                                                    <span class="input-group-text">Foto  <span class="text-danger ms-2">*</span></span>
+                                                    <span class="input-group-text">Foto <span class="text-danger ms-2">*</span></span>
                                                     <input type="file" class="form-control" name="foto" id="edit_foto">
                                                 </div>
 
@@ -258,7 +258,7 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Foto Profil <span class="text-danger ms-2">*</span></span>
-                            <input type="file" class="form-control" name="foto">
+                            <input type="file" class="form-control" name="foto" required>
                         </div>
 
                     </div>
@@ -278,6 +278,20 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
 
     <!-- Script Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <?php if (isset($_SESSION['alert'])) : ?>
+        <script>
+            Swal.fire({
+                icon: '<?= $_SESSION['alert']['type'] ?>',
+                title: '<?= $_SESSION['alert']['title'] ?>',
+                text: '<?= $_SESSION['alert']['message'] ?>',
+
+            });
+        </script>
+        <?php unset($_SESSION['alert']); ?>
+    <?php endif; ?>
+
 
 </body>
 
