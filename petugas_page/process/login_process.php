@@ -33,6 +33,7 @@ if ($row > 0) {
     $_SESSION['username'] = $data['username'];
     $_SESSION['nama'] = $data['nama'];
     $_SESSION['role'] = $data['role'];
+    $_SESSION['id_alamat'] = $data['id_alamat'];
 
     if ($data["role"] === "petugas_keamanan") {
       header("location:../app/dashboard.php");
