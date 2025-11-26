@@ -28,6 +28,21 @@ assets/warga_img/insiden_keamanan/*.png
 assets/warga_img/insiden_keamanan/*.jpg
 assets/warga_img/insiden_keamanan/*.jpeg
 
+assets/warga_img/profile_img/*.png
+assets/warga_img/profile_img/*.jpg
+assets/warga_img/profile_img/*.jpeg
+
+assets/petugas_img/profile_img/*.png
+assets/petugas_img/profile_img/*.png
+assets/petugas_img/profile_img/*.jpg
+
+assets/admin_img/profile_img/*.jpg
+assets/admin_img/profile_img/*.jpeg
+assets/admin_img/profile_img/*.jpeg
+
 # Keep folder structure
 !assets/warga_img/absensi/.gitkeep
 !assets/warga_img/insiden_keamanan/.gitkeep
+!assets/warga_img/profile_img/.gitkeep
+!assets/petugas_img/profile_img/.gitkeep
+!assets/admin_img/profile_img/.gitkeep
