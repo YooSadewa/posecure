@@ -38,13 +38,22 @@ $updateWarga = mysqli_query($conn, "
 ");
 
 if (!$updateWarga) {
-    die("Error update warga: " . mysqli_error($conn));
+    $_SESSION['alert'] = [
+    'type' => 'error',
+    'title' => 'Gagal!',
+    'message' => 'Data warga gagal diperbaharui!'
+];
+
+header("Location: ../app/daftar_akun_warga.php");
+exit;
 }
 
-echo "
-<script>
-    alert('Data warga berhasil diperbarui.');
-    window.location.href = '../app/daftar_akun_warga.php';
-</script>
-";
+$_SESSION['alert'] = [
+    'type' => 'success',
+    'title' => 'Berhasil!',
+    'message' => 'Data warga berhasil diperbaharui!'
+];
+
+header("Location: ../app/daftar_akun_warga.php");
+exit;
 ?>

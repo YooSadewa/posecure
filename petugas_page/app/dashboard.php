@@ -11,6 +11,25 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
     echo "Anda tidak memiliki akses ke halaman ini!";
     exit;
 }
+$hariIni = strtolower(date('l'));
+$convertHari = [
+    'monday' => 'senin',
+    'tuesday' => 'selasa',
+    'wednesday' => 'rabu',
+    'thursday' => 'kamis',
+    'friday' => 'jumat',
+    'saturday' => 'sabtu',
+    'sunday' => 'minggu'
+];
+
+$hariRonda = $convertHari[$hariIni];
+$qJadwalRonda = mysqli_query($conn, "
+    SELECT user.nama, warga.hari_ronda
+    FROM warga
+    JOIN user ON warga.id_user = user.id_user
+    WHERE warga.hari_ronda = '$hariRonda'
+    ORDER BY user.nama ASC
+");
 
 $id_user = $_SESSION['id_user'];
 $qAlamat = mysqli_query($conn, "
@@ -129,20 +148,28 @@ for ($b = 1; $b <= 12; $b++) {
                     </div>
                 </div>
             </div>
-
-            <!-- DUMMY JADWAL (MASIH SAMA) -->
             <div class="col-12 col-md-4">
                 <div class="card-custom h-100">
-                    <h3 class="fw-bold fs-5 mb-4">Jadwal Jumat</h3>
+                    <h3 class="fw-bold fs-5 mb-4">Jadwal <?= ucfirst($hariRonda) ?></h3>
                     <div style="max-height: 300px; overflow-y: auto;">
                         <table class="table table-bordered table-striped mb-0 small">
                             <tbody>
-                                <?php for ($i = 1; $i <= 20; $i++): ?>
+                                <?php
+                                $no = 1;
+                                if (mysqli_num_rows($qJadwalRonda) > 0):
+                                    while ($row = mysqli_fetch_assoc($qJadwalRonda)): ?>
+                                        <tr>
+                                            <td><?= $no++ ?></td>
+                                            <td><?= $row['nama'] ?></td>
+                                        </tr>
+                                    <?php
+                                    endwhile;
+                                else: ?>
                                     <tr>
-                                        <td><?= $i ?></td>
-                                        <td>Dummy Warga <?= $i ?></td>
+                                        <td colspan="2" class="text-center">Tidak ada warga ronda hari ini</td>
                                     </tr>
-                                <?php endfor; ?>
+                                <?php endif; ?>
+
                             </tbody>
                         </table>
                     </div>
@@ -173,27 +200,27 @@ for ($b = 1; $b <= 12; $b++) {
                 }]
             },
             options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            min: 0,
-            max: 15,
-            ticks: {
-              stepSize: 1,
-              callback: function(value) {
-                return Number.isInteger(value) ? value : '';
-              }
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        min: 0,
+                        max: 15,
+                        ticks: {
+                            stepSize: 1,
+                            callback: function(value) {
+                                return Number.isInteger(value) ? value : '';
+                            }
+                        }
+                    }
+                }
             }
-          }
-        }
-    }
         });
     </script>
 
