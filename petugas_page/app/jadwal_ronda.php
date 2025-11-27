@@ -1,14 +1,15 @@
 <?php
 session_start();
+include "../../koneksi_database.php";
 
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-  header("location: login_page.php?pesan=belum_login");
-  exit;
+    header("location: login_page.php?pesan=belum_login");
+    exit;
 }
 
 if ($_SESSION['role'] !== 'petugas_keamanan') {
-  echo "Anda tidak memiliki akses ke halaman ini!";
-  exit;
+    echo "Anda tidak memiliki akses ke halaman ini!";
+    exit;
 }
 
 ?>
@@ -63,6 +64,7 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
       margin-bottom: 0;
     }
   </style>
+
 </head>
 
 <body class="d-flex">
@@ -97,17 +99,40 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
             </tr>
           </thead>
           <tbody>
-            <?php for ($i = 1; $i <= 9; $i++): ?>
+            <?php
+            $hariList = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
+
+            // Ambil data berdasarkan hari
+            $data = [];
+            foreach ($hariList as $h) {
+              $query = mysqli_query($conn, "SELECT warga.hari_ronda, user.nama FROM warga JOIN user ON warga.id_user = user.id_user WHERE warga.hari_ronda='$h'");
+              $isi = [];
+              while ($row = mysqli_fetch_assoc($query)) {
+                $isi[] = $row['nama'];
+              }
+
+              // jika tidak ada data, tampilkan "-"
+              if (count($isi) == 0) {
+                $isi[] = "-";
+              }
+
+              // simpan 9 baris
+              for ($i = 0; $i < 9; $i++) {
+                $data[$i][$h] = isset($isi[$i]) ? $isi[$i] : "-";
+              }
+            }
+            ?>
+
+          <tbody>
+            <?php for ($i = 0; $i < 9; $i++): ?>
               <tr>
-                <td>Dummy</td>
-                <td>Dummy</td>
-                <td>Dummy</td>
-                <td>Dummy</td>
-                <td>Dummy</td>
-                <td>Dummy</td>
-                <td>Dummy</td>
+                <?php foreach ($hariList as $h): ?>
+                  <td><?= $data[$i][$h] ?></td>
+                <?php endforeach; ?>
               </tr>
             <?php endfor; ?>
+          </tbody>
+
           </tbody>
         </table>
       </div>
@@ -126,6 +151,7 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
   </div>
 
   <!-- Modal Tambah -->
+  <form action="../process/jadwal_tambah_warga_proses.php" method="POST" enctype="multipart/form-data">
   <div class="modal fade modal-fullscreen-md-down" id="modal_tambah" tabindex="-1" aria-labelledby="modal_tambah_label" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -135,35 +161,38 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
         </div>
 
         <div class="modal-body">
-          <form>
-            <div class="input-group mb-3">
-              <label class="input-group-text" style="width: 120px;">Nama <span class="text-danger ms-1">*</span></label>
-              <input type="text" class="form-control" id="nama" placeholder="Masukkan nama warga">
-            </div>
 
-            <div class="input-group mb-3">
-              <label class="input-group-text" style="width: 120px;">Pilih Hari <span class="text-danger ms-1">*</span></label>
-              <select id="hari" class="form-select">
-                <option selected disabled>Pilih hari...</option>
-                <option>Senin</option>
-                <option>Selasa</option>
-                <option>Rabu</option>
-                <option>Kamis</option>
-                <option>Jumat</option>
-                <option>Sabtu</option>
-                <option>Minggu</option>
-              </select>
-            </div>
-          </form>
+          <div class="input-group mb-3">
+            <label class="input-group-text" style="width: 120px;">Nama <span class="text-danger ms-1">*</span></label>
+            <input type="text" name="id_user" class="form-control" id="nama" placeholder="Masukkan nama warga" required>
+          </div>
+
+          <div class="input-group mb-3">
+            <label class="input-group-text" style="width: 120px;">Pilih Hari <span class="text-danger ms-1">*</span></label>
+            <select name="hari_ronda" id="hari_ronda" class="form-select" required>
+              <option selected disabled>Pilih hari...</option>
+              <option>Senin</option>
+              <option>Selasa</option>
+              <option>Rabu</option>
+              <option>Kamis</option>
+              <option>Jumat</option>
+              <option>Sabtu</option>
+              <option>Minggu</option>
+            </select>
+          </div>
+
         </div>
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-          <button type="button" class="btn btn-primary">Daftarkan</button>
+          <button type="submit" class="btn btn-primary" name="submit">Daftarkan</button>
         </div>
+
       </div>
     </div>
   </div>
+</form>
+
 
   <script>
     // Dropdown profil
@@ -185,6 +214,19 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
       });
     }
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <?php if (isset($_SESSION['alert'])) : ?>
+        <script>
+            Swal.fire({
+                icon: '<?= $_SESSION['alert']['type'] ?>',
+                title: '<?= $_SESSION['alert']['title'] ?>',
+                text: '<?= $_SESSION['alert']['message'] ?>',
+
+            });
+        </script>
+        <?php unset($_SESSION['alert']); ?>
+    <?php endif; ?>
 </body>
 
 </html>

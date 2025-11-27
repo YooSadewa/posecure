@@ -94,7 +94,8 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
                     </thead>
                     <tbody class="text-left">
                         <?php
-                        $query = mysqli_query($conn, "SELECT warga.*, user.nama, user.no_telp FROM warga JOIN user ON warga.id_user = user.id_user");
+                        $id_alamat = $_SESSION['id_alamat'];
+                        $query = mysqli_query($conn, "SELECT warga.*, user.nama, user.no_telp FROM warga JOIN user ON warga.id_user = user.id_user WHERE id_alamat = '$id_alamat'");
                         $no = 1;
                         while ($data = mysqli_fetch_assoc($query)) :
                         ?>

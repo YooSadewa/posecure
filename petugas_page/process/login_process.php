@@ -33,8 +33,12 @@ if ($row > 0) {
     $_SESSION['username'] = $data['username'];
     $_SESSION['nama'] = $data['nama'];
     $_SESSION['role'] = $data['role'];
+    $_SESSION['foto'] = $data['foto'];
 
     if ($data["role"] === "petugas_keamanan") {
+      $query_petugas = mysqli_query($conn, "SELECT id_alamat FROM petugas_keamanan WHERE id_user = '" . $data['id_user'] . "'");
+      $data_petugas = mysqli_fetch_assoc($query_petugas);
+      $_SESSION['id_alamat'] = $data_petugas['id_alamat'];
       header("location:../app/dashboard.php");
     } else if ($data["role"] === "admin") {
       header("location:../../admin/app/dashboard_page.php");
