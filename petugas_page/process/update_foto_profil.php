@@ -5,20 +5,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $id_user = $_POST['id_user'];
 
+    // Cek apakah ada file diupload
     if (isset($_FILES['foto_baru']) && $_FILES['foto_baru']['tmp_name']) {
 
-        $foto_tmp = $_FILES['foto_baru']['tmp_name'];
+        $folderTujuan = "../../assets/petugas_img/profile_img/";
 
-        // Konversi file ke binary
-        $foto_data = addslashes(file_get_contents($foto_tmp));
+        // Buat nama file unik (hindari bentrok)
+        $namaFileBaru = "user_" . $id_user . "_" . time() . "_" . basename($_FILES['foto_baru']['name']);
+        $pathFileTujuan = $folderTujuan . $namaFileBaru;
 
-        $query = "UPDATE user SET foto = '$foto_data' WHERE id_user = '$id_user'";
+        // Pindahkan file ke folder tujuan
+        if (move_uploaded_file($_FILES['foto_baru']['tmp_name'], $pathFileTujuan)) {
 
-        if (mysqli_query($conn, $query)) {
-            header("Location: ../app/dashboard.php");
-            exit;
+            // Simpan hanya nama file ke database
+            $query = "UPDATE user SET foto = '$namaFileBaru' WHERE id_user = '$id_user'";
+
+            if (mysqli_query($conn, $query)) {
+                header("Location: ../app/dashboard.php");
+                exit;
+            } else {
+                echo "Gagal update database: " . mysqli_error($conn);
+            }
+
         } else {
-            echo "Gagal upload foto: " . mysqli_error($conn);
+            echo "Gagal menyimpan file ke folder.";
         }
     }
 }

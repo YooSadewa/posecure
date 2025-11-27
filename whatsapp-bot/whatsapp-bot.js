@@ -79,7 +79,7 @@ async function cekAbsensiRonda() {
             LEFT JOIN log_notifikasi ln ON u.id_user = ln.id_user
                 AND ln.status = 'success'
                 AND ln.tanggal_kirim >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-            WHERE u.role = 'warga'
+            WHERE u.role = 'warga' AND w.hari_ronda IS NOT NULL
             GROUP BY u.id_user, u.nama, u.no_telp, w.blok_rumah, w.hari_ronda
             HAVING total_absensi = 0 AND notif_terakhir IS NULL
         `;

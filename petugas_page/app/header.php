@@ -4,6 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include "../../koneksi_database.php";
 
+// Cek login dan role
 if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'petugas_keamanan') {
   header("location: ../login/login_page.php?pesan=belum_login");
   exit;
@@ -11,7 +12,7 @@ if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'petugas_keamanan') {
 
 $id_user = $_SESSION['id_user'];
 
-// Deteksi halaman aktif
+// Halaman aktif
 $current_page = basename($_SERVER['PHP_SELF']);
 $page_titles = [
   'dashboard.php' => 'Dashboard',
@@ -20,8 +21,9 @@ $page_titles = [
   'jadwal_ronda_bulanan.php' => 'Riwayat Absensi Ronda',
   'laporan_insiden.php' => 'Laporan Insiden Keamanan',
 ];
-$page_subtitle = isset($page_titles[$current_page]) ? $page_titles[$current_page] : 'Dashboard';
+$page_subtitle = $page_titles[$current_page] ?? 'Dashboard';
 
+// Ambil data user
 $query = "
 SELECT 
     user.id_user,
@@ -42,8 +44,9 @@ WHERE user.id_user = '$id_user'
 $result = mysqli_query($conn, $query);
 $data = mysqli_fetch_assoc($result);
 
+// PATH FOTO PROFIL
 $foto_profil = $data['foto']
-  ? "data:image/jpeg;base64," . base64_encode($data['foto'])
+  ? "../../assets/petugas_img/profile_img/" . $data['foto']
   : "../../assets/img/default_user.png";
 ?>
 
@@ -61,20 +64,27 @@ $foto_profil = $data['foto']
 
   <div class="col-md-6 text-md-end">
     <div class="position-relative d-inline-block">
+
+      <!-- BUTTON PROFIL DROPDOWN -->
       <button id="profileButton" class="btn btn-light d-flex align-items-center gap-3 px-4 py-2 rounded-3 shadow-sm fw-semibold">
-        <img src="<?= $foto_profil ?>" class="rounded-circle object-fit-cover border border-secondary" style="width:28px;height:28px;">
+        <img src="<?= $foto_profil ?>" class="rounded-circle object-fit-cover border border-secondary"
+          style="width:28px;height:28px;">
         <span class="text-dark"><?= $data['nama'] ?></span>
         <i id="caretIcon" class="fa-solid fa-caret-down text-secondary ms-auto"></i>
       </button>
 
+      <!-- DROPDOWN -->
       <div id="profileDropdown"
         class="position-absolute w-100 mt-2 bg-white rounded-3 shadow border border-light py-2 d-none"
         style="min-width:12rem; z-index:999;">
+
         <a href="#" class="d-flex align-items-center gap-2 px-4 py-2 text-decoration-none text-secondary"
           data-bs-toggle="modal" data-bs-target="#profileModal">
           <i class="fa-solid fa-user me-2"></i> Detail Profil
         </a>
+
         <hr class="my-1 border-secondary opacity-25">
+
         <a href="../process/logout_proses.php"
           class="d-flex align-items-center gap-2 px-4 py-2 text-decoration-none text-danger">
           <i class="fa-solid fa-door-open me-2"></i> Logout
@@ -99,16 +109,18 @@ $foto_profil = $data['foto']
         <div class="text-center mb-2">
           <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center position-relative overflow-hidden"
             style="width:100px;height:100px;">
-            <img id="previewImage"
-              src="<?= $data['foto'] ? 'data:image/jpeg;base64,' . base64_encode($data['foto']) : '' ?>"
-              class="w-100 h-100 object-fit-cover rounded-circle"
-              style="<?= $data['foto'] ? '' : 'display:none' ?>">
 
-            <i id="defaultIcon" class="fas fa-user fa-3x text-secondary"
-              style="<?= $data['foto'] ? 'display:none' : '' ?>"></i>
+            <?php if ($data['foto']) { ?>
+              <img id="previewImage"
+                src="../../assets/petugas_img/profile_img/<?= $data['foto'] ?>"
+                class="w-100 h-100 object-fit-cover rounded-circle">
+            <?php } else { ?>
+              <i id="defaultIcon" class="fas fa-user fa-3x text-secondary"></i>
+            <?php } ?>
+
           </div>
 
-          <!-- BUTTON EDIT FOTO PROFIL -->
+          <!-- BUTTON EDIT FOTO -->
           <form action="../process/update_foto_profil.php" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="id_user" value="<?= $data['id_user'] ?>">
 
@@ -117,10 +129,13 @@ $foto_profil = $data['foto']
               Edit Foto Profil
             </a>
 
-            <input type="file" id="editFotoInput" name="foto_baru" accept="image/*" hidden onchange="this.form.submit()">
+            <input type="file" id="editFotoInput" name="foto_baru" accept="image/*" hidden
+              onchange="this.form.submit()">
           </form>
         </div>
 
+
+        <!-- DATA USER -->
         <div class="text-center mb-4">
           <h5 class="fw-bold fs-2"><?= $data['nama'] ?></h5>
           <small class="text-muted"><?= $data['username'] ?></small>
@@ -133,32 +148,38 @@ $foto_profil = $data['foto']
           <div class="col-auto">:</div>
           <div class="col"><?= $data['no_telp'] ?></div>
         </div>
+
         <div class="row mb-3">
           <div class="col-4 col-md-3 fw-bold">No. RT</div>
           <div class="col-auto">:</div>
           <div class="col"><?= $data['no_rt'] ?></div>
         </div>
+
         <div class="row mb-3">
           <div class="col-4 col-md-3 fw-bold">No. RW</div>
           <div class="col-auto">:</div>
           <div class="col"><?= $data['no_rw'] ?></div>
         </div>
+
         <div class="row mb-3">
           <div class="col-4 col-md-3 fw-bold">Kelurahan</div>
           <div class="col-auto">:</div>
           <div class="col"><?= trim($data['kelurahan']) ?></div>
         </div>
+
         <div class="row mb-3">
           <div class="col-4 col-md-3 fw-bold">Kecamatan</div>
           <div class="col-auto">:</div>
           <div class="col"><?= trim($data['kecamatan']) ?></div>
         </div>
 
+        <!-- BUTTON GANTI PASSWORD -->
         <div class="text-end">
           <button class="btn btn-success px-4 py-2" data-bs-toggle="modal" data-bs-target="#gantiPasswordModal">
             <i class="fas fa-key me-2"></i>Ganti Password
           </button>
         </div>
+
       </div>
     </div>
   </div>
