@@ -195,7 +195,7 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
   // buat map nama(lowercase) => id_user untuk JS
   $warga_map = [];
   foreach ($warga_list as $w) {
-    $warga_map[mb_strtolower($w['nama'])] = $w['nama'];
+    $warga_map[mb_strtolower($w['nama'])] = $w['id_user']; 
   }
   ?>
 
