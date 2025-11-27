@@ -19,14 +19,13 @@ $limit = 9;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $start = ($page - 1) * $limit;
 
-// Hitung total data
-$countQuery = mysqli_query($conn, "SELECT COUNT(*) AS total FROM warga");
+// Hitung total data (berdasarkan warga yang punya jadwal ronda)
+$countQuery = mysqli_query($conn, "SELECT COUNT(DISTINCT id_user) AS total FROM warga WHERE hari_ronda IS NOT NULL AND hari_ronda != ''");
 $countData = mysqli_fetch_assoc($countQuery);
 $totalData = $countData['total'];
 
 // Hitung total halaman
 $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
-
 
 ?>
 <!DOCTYPE html>
@@ -118,10 +117,18 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
             <?php
             $hariList = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 
-            // Ambil data berdasarkan hari
+            // Ambil data berdasarkan hari DENGAN LIMIT dan OFFSET
             $data = [];
             foreach ($hariList as $h) {
-              $query = mysqli_query($conn, "SELECT warga.hari_ronda, user.nama FROM warga JOIN user ON warga.id_user = user.id_user WHERE warga.hari_ronda='$h'");
+              // TAMBAHKAN LIMIT DAN OFFSET DI SINI
+              $query = mysqli_query($conn, "
+                SELECT warga.hari_ronda, user.nama 
+                FROM warga 
+                JOIN user ON warga.id_user = user.id_user 
+                WHERE warga.hari_ronda='$h'
+                LIMIT $limit OFFSET $start
+              ");
+              
               $isi = [];
               while ($row = mysqli_fetch_assoc($query)) {
                 $isi[] = $row['nama'];
@@ -133,14 +140,13 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
               }
 
               // simpan 9 baris
-              for ($i = 0; $i < 9; $i++) {
+              for ($i = 0; $i < $limit; $i++) {
                 $data[$i][$h] = isset($isi[$i]) ? $isi[$i] : "-";
               }
             }
             ?>
 
-          <tbody>
-            <?php for ($i = 0; $i < 9; $i++): ?>
+            <?php for ($i = 0; $i < $limit; $i++): ?>
               <tr>
                 <?php foreach ($hariList as $h): ?>
                   <td><?= $data[$i][$h] ?></td>
@@ -148,10 +154,9 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
               </tr>
             <?php endfor; ?>
           </tbody>
-
-          </tbody>
         </table>
       </div>
+      
       <div class="d-flex justify-content-end mt-3 pe-3">
         <nav>
           <ul class="pagination mb-0">
@@ -219,12 +224,10 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
 
               <datalist id="daftar_warga">
                 <?php foreach ($warga_list as $w): ?>
-                  <!-- sertakan data-id agar JS bisa ambil id_user -->
                   <option data-id="<?= htmlspecialchars($w['nama']) ?>" value="<?= htmlspecialchars($w['nama']) ?>"></option>
                 <?php endforeach; ?>
               </datalist>
 
-              <!-- Hidden input untuk id_user -->
               <input type="hidden" name="id_user" id="id_user">
               <small class="text-muted"></small>
             </div>
@@ -257,11 +260,9 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
 
 
   <script>
-    
     const inputNama = document.getElementById("nama_warga");
     const idUserHidden = document.getElementById("id_user");
 
-    // Map nama(lowercase) -> id_user dari PHP (case-insensitive)
     const wargaMap = <?= json_encode($warga_map) ?>;
 
     inputNama.addEventListener("input", function() {
@@ -274,11 +275,9 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
       }
     });
 
-    // Validasi sebelum submit (jaga kalau JS diaktifkan)
     document.querySelector('form[action="../process/jadwal_tambah_warga_proses.php"]').addEventListener('submit', function(e) {
       if (idUserHidden.value === "") {
         e.preventDefault();
-        // gunakan SweetAlert jika sudah di-include
         if (window.Swal) {
           Swal.fire({
             icon: 'error',
@@ -295,7 +294,6 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
 
 
   <script>
-    // Dropdown profil
     const profileButton = document.getElementById("profileButton");
     const profileDropdown = document.getElementById("profileDropdown");
     const caretIcon = document.getElementById("caretIcon");

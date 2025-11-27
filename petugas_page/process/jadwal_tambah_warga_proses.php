@@ -31,6 +31,25 @@ if (isset($_POST['submit'])) {
         exit;
     }
 
+    // ===== TAMBAHKAN VALIDASI INI ===== 
+    // Cek apakah warga sudah memiliki jadwal di hari yang sama
+    $cek_duplikat = mysqli_query($conn, "
+        SELECT * FROM warga 
+        WHERE id_user = '$id_user' 
+        AND hari_ronda = '$hari_ronda'
+    ");
+
+    if (mysqli_num_rows($cek_duplikat) > 0) {
+        $_SESSION['alert'] = [
+            'type' => 'error',
+            'title' => 'Gagal!',
+            'message' => 'Warga sudah terjadwal di hari ' . $hari_ronda . '!'
+        ];
+        header("Location: ../app/jadwal_ronda.php");
+        exit;
+    }
+    // ===== AKHIR VALIDASI =====
+
     // Proses update jadwal ronda
     $query = mysqli_query($conn, "
         UPDATE warga 
@@ -54,5 +73,4 @@ if (isset($_POST['submit'])) {
 
     header("Location: ../app/jadwal_ronda.php");
     exit;
-}
-?>
+}?>
