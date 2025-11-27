@@ -153,6 +153,7 @@ $bulanList = [
             max-width: 220px !important;
             border-radius: 6px;
         }
+
         body.pdf-mode button[data-bs-toggle="modal"],
         body.pdf-mode .modal {
             display: none !important;
@@ -247,6 +248,9 @@ $bulanList = [
                                     <td><?= $data["nama"]; ?></td>
 
                                     <td class="text-center">
+                                        <?php
+                                        $modalId = "photoModal" . ($no - 1); // Gunakan $no - 1 karena sudah di-increment
+                                        ?>
 
                                         <?php if (!empty($data["foto"])): ?>
                                             <button class="btn btn-sm text-white"
@@ -255,7 +259,9 @@ $bulanList = [
                                                 data-bs-target="#<?= $modalId; ?>">
                                                 Lihat Foto
                                             </button>
-                                            <div class="modal fade" id="<?= $modalId; ?>" tabindex="-1">
+
+                                            <!-- Modal Foto -->
+                                            <div class="modal fade" id="<?= $modalId; ?>" tabindex="-1" aria-hidden="true">
                                                 <div class="modal-dialog modal-dialog-centered modal-lg">
                                                     <div class="modal-content">
                                                         <div class="modal-header text-white" style="background:#198754">
@@ -279,11 +285,15 @@ $bulanList = [
                                         <?php endif; ?>
                                     </td>
                                 </tr>
-
-                            <?php endwhile; ?>
+                            <?php
+                            endwhile; // ← Hapus $no++ yang ada di sini
+                            ?>
                         </tbody>
                     </table>
-
+                    <div class="alert alert-info mt-4">
+                        <i class="fa-solid fa-circle-info me-2"></i>
+                        <small>Klik gambar untuk melihat bukti foto lebih jelas.</small>
+                    </div>
                 </div>
             </div>
 
