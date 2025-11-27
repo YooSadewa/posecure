@@ -129,7 +129,7 @@ $hari = !empty($data['hari_ronda']) ? $data['hari_ronda'] : "Hari Ronda Belum Di
             onmouseover="this.style.backgroundColor='#f8f9fa'"
             onmouseout="this.style.backgroundColor='white'">
             <img
-              src="../../assets/img/bg_layangan.jpeg"
+              src="../../assets/warga_img/profile_img/<?= $user_data['foto'] ?>"
               alt="Foto Profil"
               class="rounded-circle object-fit-cover border border-secondary"
               style="width: 28px; height: 28px" />
@@ -212,11 +212,10 @@ $hari = !empty($data['hari_ronda']) ? $data['hari_ronda'] : "Hari Ronda Belum Di
       </div>
       <div class="modal-body px-4 pb-4">
         <div class="text-center mb-2">
-          <div
+          <img
+            src="../../assets/warga_img/profile_img/<?= $user_data['foto'] ?>"
             class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center"
             style="width: 100px; height: 100px">
-            <i class="fas fa-user fa-3x text-secondary"></i>
-          </div>
           <a
             href="#"
             class="d-block mt-2 text-decoration-none text-primary fw-medium">
