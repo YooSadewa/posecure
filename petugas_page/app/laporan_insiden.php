@@ -84,11 +84,9 @@ $bulanList = [
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
-        .filter-controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            justify-content: space-between;
+        table th {
+            background-color: #1E3A8A;
+            color: white;
         }
 
         .btn-success {
@@ -96,13 +94,69 @@ $bulanList = [
             border-color: #198754 !important;
         }
 
-        table th {
-            background-color: #1E3A8A;
-            color: white;
+        body.pdf-mode {
+            background: #ffffff !important;
         }
 
-        body.pdf-mode .no-print {
+        body.pdf-mode .content {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+        }
+
+        body.pdf-mode .card-custom {
+            box-shadow: none !important;
+            padding: 0 !important;
+            border: none !important;
+        }
+
+        body.pdf-mode table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            font-size: 11px !important;
+        }
+
+        body.pdf-mode table th,
+        body.pdf-mode table td {
+            border: 1px solid #000 !important;
+            padding: 6px !important;
+            background: #ffffff !important;
+            color: #000 !important;
+        }
+
+        #pdfHeader {
+            text-align: center;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        body.pdf-mode #pdfHeader {
+            display: block !important;
+        }
+
+        #pdfHeader hr {
+            border-top: 2px solid #000;
+            margin-top: 5px;
+        }
+
+        .pdf-only-image {
+            display: none;
+        }
+
+        body.pdf-mode .pdf-only-image {
+            display: block !important;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        body.pdf-mode .pdf-only-image img {
+            max-width: 220px !important;
+            border-radius: 6px;
+        }
+        body.pdf-mode button[data-bs-toggle="modal"],
+        body.pdf-mode .modal {
             display: none !important;
+            visibility: hidden !important;
         }
     </style>
 </head>
@@ -115,7 +169,8 @@ $bulanList = [
 
         <div class="card-custom">
             <h3 class="fw-bold fs-5 mb-4 text-dark">Tabel Laporan Insiden</h3>
-            <div class="filter-controls">
+
+            <div class="filter-controls d-flex justify-content-between">
                 <div class="d-flex gap-2">
                     <select id="filterBulan" class="form-select form-select-sm shadow-sm">
                         <?php foreach ($bulanList as $num => $nama): ?>
@@ -137,20 +192,27 @@ $bulanList = [
                     </select>
                 </div>
 
-                <button id="downloadPDF" class="btn btn-success px-3 fw-semibold no-print">
+                <button id="downloadPDF" class="btn btn-success px-3 fw-semibold">
                     <i class="fa-solid fa-file-pdf"></i> Download PDF
                 </button>
             </div>
 
             <div class="table-responsive mt-3">
                 <div id="laporanPDF">
+
+                    <div id="pdfHeader">
+                        <h4 class="fw-bold">Laporan Insiden Keamanan</h4>
+                        <h6 id="pdfSubtitle" class="text-secondary"></h6>
+                        <hr>
+                    </div>
+
                     <table class="table table-bordered table-striped mb-0 align-middle">
                         <thead>
                             <tr>
                                 <th>No.</th>
                                 <th>Jam, Tanggal</th>
                                 <th>Jenis Insiden</th>
-                                <th>Deskripsi Singkat</th>
+                                <th>Deskripsi</th>
                                 <th>Nama Pelapor</th>
                                 <th>Bukti Foto</th>
                             </tr>
@@ -159,22 +221,23 @@ $bulanList = [
                         <tbody>
                             <?php
                             $query = mysqli_query($conn, "
-                            SELECT insiden_keamanan.*, user.nama
-                            FROM insiden_keamanan
-                            JOIN user ON insiden_keamanan.id_user = user.id_user
-                            JOIN warga ON insiden_keamanan.id_user = warga.id_user
-                            JOIN alamat ON warga.id_alamat = alamat.id_alamat
-                            WHERE MONTH(insiden_keamanan.tanggal) = '$bulan'
-                            AND YEAR(insiden_keamanan.tanggal) = '$tahun'
-                            AND alamat.kecamatan = '$kecamatan'
-                            AND alamat.kelurahan = '$kelurahan'
-                            AND alamat.no_rt = '$rt'
-                            AND alamat.no_rw = '$rw'
-                            ORDER BY insiden_keamanan.tanggal DESC
-                        ");
+                                SELECT insiden_keamanan.*, user.nama
+                                FROM insiden_keamanan
+                                JOIN user ON insiden_keamanan.id_user = user.id_user
+                                JOIN warga ON insiden_keamanan.id_user = warga.id_user
+                                JOIN alamat ON warga.id_alamat = alamat.id_alamat
+                                WHERE MONTH(insiden_keamanan.tanggal) = '$bulan'
+                                AND YEAR(insiden_keamanan.tanggal) = '$tahun'
+                                AND alamat.kecamatan = '$kecamatan'
+                                AND alamat.kelurahan = '$kelurahan'
+                                AND alamat.no_rt = '$rt'
+                                AND alamat.no_rw = '$rw'
+                                ORDER BY insiden_keamanan.tanggal DESC
+                            ");
 
                             $no = 1;
                             while ($data = mysqli_fetch_assoc($query)):
+                                $modalId = "photoModal" . $no;
                             ?>
                                 <tr>
                                     <td><?= $no++; ?></td>
@@ -184,55 +247,44 @@ $bulanList = [
                                     <td><?= $data["nama"]; ?></td>
 
                                     <td class="text-center">
-                                        <?php
-                                        // Gunakan indeks modal yang benar
-                                        $modalId = "photoModal" . $no;
-                                        ?>
 
                                         <?php if (!empty($data["foto"])): ?>
-                                            <button class="btn btn-sm badge-photo text-white"
-                                                style="background-color: #198754; border-color: #198754;"
+                                            <button class="btn btn-sm text-white"
+                                                style="background-color: #198754;"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#<?= $modalId; ?>">
-                                                <i class="bi bi-eye me-1"></i> Lihat Foto
+                                                Lihat Foto
                                             </button>
-
-
-                                            <!-- Modal Foto -->
-                                            <div class="modal fade" id="<?= $modalId; ?>" tabindex="-1" aria-hidden="true">
+                                            <div class="modal fade" id="<?= $modalId; ?>" tabindex="-1">
                                                 <div class="modal-dialog modal-dialog-centered modal-lg">
-                                                    <div class="modal-content border-0 shadow-lg">
-                                                        <div class="modal-header text-white" style="background-color: #198754;">
-                                                            <h5 class="modal-title">
-                                                                <i class="bi bi-image me-2"></i>
-                                                                Bukti Foto Insiden
-                                                            </h5>
+                                                    <div class="modal-content">
+                                                        <div class="modal-header text-white" style="background:#198754">
+                                                            <h5 class="modal-title">Bukti Foto</h5>
                                                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                                         </div>
 
-                                                        <div class="modal-body text-center p-4">
+                                                        <div class="modal-body text-center">
                                                             <img src="../../assets/warga_img/insiden_keamanan/<?= $data['foto'] ?>"
-                                                                class="img-fluid rounded"
-                                                                alt="Bukti Foto">
+                                                                class="img-fluid rounded">
                                                         </div>
                                                     </div>
                                                 </div>
+                                            </div>
+                                            <div class="pdf-only-image">
+                                                <img src="../../assets/warga_img/insiden_keamanan/<?= $data['foto'] ?>">
                                             </div>
 
                                         <?php else: ?>
                                             <span class="text-muted">Tidak ada foto</span>
                                         <?php endif; ?>
                                     </td>
-                                <?php $no++;
-                            endwhile; ?>
+                                </tr>
+
+                            <?php endwhile; ?>
                         </tbody>
                     </table>
-                </div>
-            </div>
 
-            <div class="alert alert-info mt-4">
-                <i class="fa-solid fa-circle-info me-2"></i>
-                <small>Klik gambar untuk melihat bukti foto lebih jelas.</small>
+                </div>
             </div>
 
         </div>
@@ -247,19 +299,34 @@ $bulanList = [
             let t = document.getElementById("filterTahun").value;
             window.location.href = `laporan_insiden.php?bulan=${b}&tahun=${t}`;
         }
+
         document.getElementById("downloadPDF").addEventListener("click", () => {
-            const element = document.getElementById("laporanPDF");
+
+            const bulanList = [
+                "", "Januari", "Februari", "Maret", "April", "Mei",
+                "Juni", "Juli", "Agustus", "September",
+                "Oktober", "November", "Desember"
+            ];
+
+            let bulan = document.getElementById("filterBulan").value;
+            let tahun = document.getElementById("filterTahun").value;
+
+            document.getElementById("pdfSubtitle").innerText =
+                bulanList[bulan] + " " + tahun;
+
             document.body.classList.add("pdf-mode");
 
+            const element = document.getElementById("laporanPDF");
+
             const opt = {
-                margin: 0.3,
-                filename: 'laporan-insiden.pdf',
+                margin: [0.5, 0.5, 0.5, 0.5],
+                filename: `Laporan-Insiden-${bulanList[bulan]}-${tahun}.pdf`,
                 html2canvas: {
                     scale: 2,
-                    useCORS: true
+                    scrollY: 0
                 },
                 jsPDF: {
-                    unit: 'in',
+                    unit: 'mm',
                     format: 'a4',
                     orientation: 'portrait'
                 }
