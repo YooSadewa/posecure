@@ -153,6 +153,7 @@ $bulanList = [
             max-width: 220px !important;
             border-radius: 6px;
         }
+
         body.pdf-mode button[data-bs-toggle="modal"],
         body.pdf-mode .modal {
             display: none !important;
@@ -289,7 +290,10 @@ $bulanList = [
                             ?>
                         </tbody>
                     </table>
-
+                    <div class="alert alert-info mt-4">
+                        <i class="fa-solid fa-circle-info me-2"></i>
+                        <small>Klik gambar untuk melihat bukti foto lebih jelas.</small>
+                    </div>
                 </div>
             </div>
 
