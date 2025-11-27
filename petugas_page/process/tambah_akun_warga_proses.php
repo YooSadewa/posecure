@@ -14,10 +14,19 @@ $id_alamat = $_SESSION['id_alamat'];
 $foto = null;
 
 if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
-    $foto_tmp = $_FILES['foto']['tmp_name'];
-    $foto = addslashes(file_get_contents($foto_tmp));  
+    $folder = "../../assets/warga_img/profile_img/";
+    $ext = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
+    $filename = uniqid('profile_') . '.' . $ext;
+    $fullpath = $folder . $filename;
+
+    if (move_uploaded_file($_FILES['foto']['tmp_name'], $fullpath)) {
+        $foto = $filename;
+    
+    } else {
+        $foto = null; 
+    }
 } else {
-    $foto = null; 
+    $foto = null;
 }
 
 /* Membuat Id User */
