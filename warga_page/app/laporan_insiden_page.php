@@ -145,7 +145,18 @@ $id_alamat = $_SESSION['id_alamat'];
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <?php if (isset($_SESSION['alert'])) : ?>
+        <script>
+            Swal.fire({
+                icon: '<?= $_SESSION['alert']['type'] ?>',
+                title: '<?= $_SESSION['alert']['title'] ?>',
+                text: '<?= $_SESSION['alert']['message'] ?>',
 
+            });
+        </script>
+        <?php unset($_SESSION['alert']); ?>
+    <?php endif; ?>
 <?php include 'footer.php'; ?>
 </body>
 </html>

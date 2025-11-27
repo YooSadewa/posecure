@@ -45,12 +45,23 @@ $queryInsiden = mysqli_query($conn, "
     VALUES ('$id_insiden', '$id_user', '$tanggal', '$jam', '$jenis_insiden', '$foto', '$keterangan')
 ");
 
-if (!$queryInsiden) {
-    die("Error insert: " . mysqli_error($conn));
+if (!$queryUser) {
+    $_SESSION['alert'] = [
+    'type' => 'success',
+    'title' => 'Berhasil!',
+    'message' => 'laporan insiden berhasil ditambahkan!'
+];
+
+header("Location: ../app/laporan_insiden_page.php");
+exit;
 }
 
-// Redirect ke halaman laporan
-echo "<script>
-        alert('Laporan Insiden berhasil disimpan.');
-        window.location.href = '../app/laporan_insiden_page.php';
-      </script>";
+$_SESSION['alert'] = [
+    'type' => 'error',
+    'title' => 'Gagal!',
+    'message' => 'Laporan insiden gagal ditambahkan!'
+];
+
+header("Location: ../app/laporan_insiden_page.php");
+exit;
+
