@@ -11,6 +11,7 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
     echo "Anda tidak memiliki akses ke halaman ini!";
     exit;
 }
+
 $id_user = $_SESSION['id_user'];
 
 $qAlamat = mysqli_query($conn, "
@@ -30,6 +31,7 @@ $kecamatan = $_SESSION['kecamatan'];
 $kelurahan = $_SESSION['kelurahan'];
 $rt = $_SESSION['no_rt'];
 $rw = $_SESSION['no_rw'];
+
 $hariIni = strtolower(date('l'));
 $convertHari = [
     'monday' => 'senin',
@@ -41,6 +43,7 @@ $convertHari = [
     'sunday' => 'minggu'
 ];
 $hariRonda = $convertHari[$hariIni];
+
 $qJadwalRonda = mysqli_query($conn, "
     SELECT user.nama
     FROM warga
@@ -53,6 +56,7 @@ $qJadwalRonda = mysqli_query($conn, "
     AND alamat.no_rw = '$rw'
     ORDER BY user.nama ASC
 ");
+
 $qTotalWarga = mysqli_query($conn, "
     SELECT COUNT(*) AS total
     FROM user
@@ -65,6 +69,7 @@ $qTotalWarga = mysqli_query($conn, "
     AND alamat.no_rw = '$rw'
 ");
 $totalWarga = mysqli_fetch_assoc($qTotalWarga)['total'];
+
 $qTotalInsiden = mysqli_query($conn, "
     SELECT COUNT(*) AS total
     FROM insiden_keamanan
@@ -76,8 +81,18 @@ $qTotalInsiden = mysqli_query($conn, "
     AND alamat.no_rw = '$rw'
 ");
 $totalInsiden = mysqli_fetch_assoc($qTotalInsiden)['total'];
+$tahunSekarang = date("Y");
+$tahun = isset($_GET['tahun']) ? $_GET['tahun'] : $tahunSekarang;
+$qTahun = mysqli_query($conn, "
+    SELECT DISTINCT YEAR(tanggal) AS tahun
+    FROM insiden_keamanan
+    ORDER BY tahun DESC
+");
+$listTahun = [];
+while ($t = mysqli_fetch_assoc($qTahun)) {
+    $listTahun[] = $t['tahun'];
+}
 $jumlahPerBulan = [];
-
 for ($b = 1; $b <= 12; $b++) {
     $q = mysqli_query($conn, "
         SELECT COUNT(*) AS jumlah
@@ -85,6 +100,7 @@ for ($b = 1; $b <= 12; $b++) {
         JOIN warga ON insiden_keamanan.id_user = warga.id_user
         JOIN alamat ON warga.id_alamat = alamat.id_alamat
         WHERE MONTH(insiden_keamanan.tanggal) = '$b'
+        AND YEAR(insiden_keamanan.tanggal) = '$tahun'
         AND alamat.kecamatan = '$kecamatan'
         AND alamat.kelurahan = '$kelurahan'
         AND alamat.no_rt = '$rt'
@@ -94,7 +110,6 @@ for ($b = 1; $b <= 12; $b++) {
     $d = mysqli_fetch_assoc($q);
     $jumlahPerBulan[] = $d['jumlah'];
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -185,7 +200,23 @@ for ($b = 1; $b <= 12; $b++) {
         <div class="row g-4" style="min-height: 400px;">
             <div class="col-12 col-md-8">
                 <div class="card-custom h-100">
-                    <h3 class="fw-bold fs-5 mb-4">Grafik Insiden Keamanan</h3>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="fw-bold fs-5">Grafik Insiden Keamanan</h3>
+
+                        <form method="GET">
+                            <select name="tahun" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <?php
+                                $tahunSekarang = date("Y");
+                                for ($i = 2022; $i <= $tahunSekarang; $i++):
+                                ?>
+                                    <option value="<?= $i ?>" <?= ($i == $tahun ? 'selected' : '') ?>>
+                                        <?= $i ?>
+                                    </option>
+                                <?php endfor; ?>
+                            </select>
+                        </form>
+                    </div>
+
                     <div style="height: 300px;">
                         <canvas id="incidentChart"></canvas>
                     </div>
@@ -225,6 +256,7 @@ for ($b = 1; $b <= 12; $b++) {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const dataInsiden = <?= json_encode($jumlahPerBulan); ?>;
+        const tahunDipilih = <?= json_encode($tahun); ?>;
 
         new Chart(document.getElementById('incidentChart'), {
             type: 'line',
@@ -234,7 +266,7 @@ for ($b = 1; $b <= 12; $b++) {
                     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
                 ],
                 datasets: [{
-                    label: 'Jumlah Insiden',
+                    label: 'Jumlah Insiden Tahun ' + tahunDipilih,
                     data: dataInsiden,
                     borderColor: '#10B981',
                     backgroundColor: 'rgba(16,185,129,0.2)',
