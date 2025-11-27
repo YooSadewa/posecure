@@ -62,20 +62,17 @@ $hariInggrisKeIndo = [
   'saturday' => 'Sabtu'
 ];
 
-$hariBesok = strtolower(date('l', strtotime('+1 day'))); // Besok dalam bahasa Inggris
+$hariBesok = strtolower(date('l', strtotime('+1 day'))); 
 
 $tampilkanAlert = false;
 $namaHariRonda = '';
 
 if (!empty($hariRonda) && $hariRonda !== 'NULL') {
-  // Konversi hari_ronda dari database (Indonesia) ke bahasa Inggris
   $hariRondaLower = strtolower(trim($hariRonda));
 
-  // Cek apakah ada di mapping
   if (isset($hariIndoKeInggris[$hariRondaLower])) {
     $hariRondaInggris = $hariIndoKeInggris[$hariRondaLower];
 
-    // Bandingkan dengan hari besok
     if ($hariBesok === $hariRondaInggris) {
       $tampilkanAlert = true;
       $namaHariRonda = $hariInggrisKeIndo[$hariBesok];
@@ -180,8 +177,7 @@ if (!empty($hariRonda) && $hariRonda !== 'NULL') {
       <div class="col-lg-12">
 
         <?php if ($tampilkanAlert): ?>
-          <!-- Alert Pengingat Ronda -->
-          <div class="alert alert-warning alert-dismissible fade show alert-ronda shadow-sm mb-4" role="alert">
+          <div class="alert alert-warning alert-dismissible fade show alert-ronda shadow-sm" role="alert">
             <div class="d-flex align-items-center">
               <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
               <div>
@@ -189,7 +185,7 @@ if (!empty($hariRonda) && $hariRonda !== 'NULL') {
                   <i class="bi bi-bell-fill me-2"></i>Pengingat Jadwal Ronda
                 </h5>
                 <p class="mb-0">
-                  <strong>Besok (<?= $namaHariRonda ?>)</strong> adalah jadwal ronda Anda. Jangan lupa untuk berpartisipasi dalam kegiatan ronda malam!
+                  <strong>Besok, <?= $namaHariRonda ?></strong> adalah jadwal ronda Anda. Jangan lupa untuk berpartisipasi dalam kegiatan ronda malam!
                 </p>
               </div>
             </div>
@@ -293,6 +289,19 @@ if (!empty($hariRonda) && $hariRonda !== 'NULL') {
       window.location.href = "?year=" + year;
     }
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <?php if (isset($_SESSION['alert'])) : ?>
+      <script>
+          Swal.fire({
+              icon: '<?= $_SESSION['alert']['type'] ?>',
+              title: '<?= $_SESSION['alert']['title'] ?>',
+              text: '<?= $_SESSION['alert']['message'] ?>',
+              confirmButtonColor: '#1E3A8A'
+          });
+      </script>
+      <?php unset($_SESSION['alert']); ?>
+  <?php endif; ?>
+  
 </body>
 
 </html>
