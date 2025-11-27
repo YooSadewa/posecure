@@ -247,12 +247,9 @@ $bulanList = [
                                     <td><?= $data["nama"]; ?></td>
 
                                     <td class="text-center">
-<<<<<<< HEAD
                                         <?php
                                         $modalId = "photoModal" . ($no - 1); // Gunakan $no - 1 karena sudah di-increment
                                         ?>
-=======
->>>>>>> a56c59d6abd63d9668a565e31e0f3e33c2ec180c
 
                                         <?php if (!empty($data["foto"])): ?>
                                             <button class="btn btn-sm text-white"
@@ -261,13 +258,9 @@ $bulanList = [
                                                 data-bs-target="#<?= $modalId; ?>">
                                                 Lihat Foto
                                             </button>
-<<<<<<< HEAD
 
                                             <!-- Modal Foto -->
                                             <div class="modal fade" id="<?= $modalId; ?>" tabindex="-1" aria-hidden="true">
-=======
-                                            <div class="modal fade" id="<?= $modalId; ?>" tabindex="-1">
->>>>>>> a56c59d6abd63d9668a565e31e0f3e33c2ec180c
                                                 <div class="modal-dialog modal-dialog-centered modal-lg">
                                                     <div class="modal-content">
                                                         <div class="modal-header text-white" style="background:#198754">
@@ -291,14 +284,9 @@ $bulanList = [
                                         <?php endif; ?>
                                     </td>
                                 </tr>
-<<<<<<< HEAD
                             <?php
                             endwhile; // ← Hapus $no++ yang ada di sini
                             ?>
-=======
-
-                            <?php endwhile; ?>
->>>>>>> a56c59d6abd63d9668a565e31e0f3e33c2ec180c
                         </tbody>
                     </table>
 
