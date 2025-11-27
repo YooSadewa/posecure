@@ -14,8 +14,13 @@ if ($_SESSION['role'] !== 'admin') {
 
 // total petugas
 include '../../koneksi_database.php';
-$query_total = "SELECT COUNT(*) as total FROM user WHERE role = 'petugas_keamanan'";
-$total_petugas = mysqli_fetch_assoc(mysqli_query($conn, $query_total))['total'];
+$query_total_petugas = "SELECT COUNT(*) as total FROM user WHERE role = 'petugas_keamanan'";
+$total_petugas = mysqli_fetch_assoc(mysqli_query($conn, $query_total_petugas))['total'];
+
+// Pagination
+$jumlah_per_halaman = 10;
+$halaman_aktif = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
+$awal_data = ($jumlah_per_halaman * $halaman_aktif) - $jumlah_per_halaman;
 
 // search
 $search_keyword = "";
@@ -30,8 +35,18 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
   )";
 }
 
+// total data pagination
+$query_count_data = "SELECT COUNT(*) AS total
+                      FROM user u
+                      JOIN petugas_keamanan p ON u.id_user = p.id_user
+                      JOIN alamat a ON p.id_alamat = a.id_alamat
+                      WHERE u.role = 'petugas_keamanan' $search_query";
+$total_data = mysqli_fetch_assoc(mysqli_query($conn, $query_count_data))['total'];
+
+$jumlah_halaman = ceil($total_data / $jumlah_per_halaman);
+
 // tabel
-$query_table = "SELECT u.id_user, u.username, a.kecamatan, a.kelurahan, a.no_rt, a.no_rw FROM user u JOIN petugas_keamanan p ON u.id_user = p.id_user JOIN alamat a ON p.id_alamat = a.id_alamat WHERE u.role = 'petugas_keamanan' $search_query ORDER BY u.username ASC";
+$query_table = "SELECT u.id_user, u.username, a.kecamatan, a.kelurahan, a.no_rt, a.no_rw FROM user u JOIN petugas_keamanan p ON u.id_user = p.id_user JOIN alamat a ON p.id_alamat = a.id_alamat WHERE u.role = 'petugas_keamanan' $search_query ORDER BY u.username ASC LIMIT $awal_data, $jumlah_per_halaman";
 $result_table = mysqli_query($conn, $query_table);
 
 // profile admin
@@ -418,7 +433,7 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
             <tbody>
               <?php
               if (mysqli_num_rows($result_table) > 0) {
-                $no = 1;
+                $no = $awal_data + 1;
                 while ($row = mysqli_fetch_assoc($result_table)) {
               ?>
                   <tr>
@@ -550,6 +565,47 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
 
             </tbody>
           </table>
+        </div>
+        <div class="d-flex justify-content-end align-items-center mt-3 pe-3">
+          <nav aria-label="Page navigation">
+            <ul class="pagination mb-0">
+
+              <?php if ($halaman_aktif > 1) : ?>
+                <li class="page-item">
+                  <a class="page-link" href="?page=<?= $halaman_aktif - 1; ?>&search=<?= $search_keyword; ?>" aria-label="Previous">
+                    <span aria-hidden="true">Previous</span>
+                  </a>
+                </li>
+              <?php else : ?>
+                <li class="page-item disabled">
+                  <span class="page-link">Previous</span>
+                </li>
+              <?php endif; ?>
+
+              <?php for ($i = 1; $i <= $jumlah_halaman; $i++) : ?>
+                <?php if ($i == $halaman_aktif) : ?>
+                  <li class="page-item active"><span class="page-link"><?= $i; ?></span></li>
+                <?php else : ?>
+                  <li class="page-item">
+                    <a class="page-link" href="?page=<?= $i; ?>&search=<?= $search_keyword; ?>"><?= $i; ?></a>
+                  </li>
+                <?php endif; ?>
+              <?php endfor; ?>
+
+              <?php if ($halaman_aktif < $jumlah_halaman) : ?>
+                <li class="page-item">
+                  <a class="page-link" href="?page=<?= $halaman_aktif + 1; ?>&search=<?= $search_keyword; ?>" aria-label="Next">
+                    <span aria-hidden="true">Next</span>
+                  </a>
+                </li>
+              <?php else : ?>
+                <li class="page-item disabled">
+                  <span class="page-link">Next</span>
+                </li>
+              <?php endif; ?>
+
+            </ul>
+          </nav>
         </div>
       </div>
     </div>
