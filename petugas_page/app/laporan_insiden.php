@@ -159,19 +159,19 @@ $bulanList = [
                         <tbody>
                             <?php
                             $query = mysqli_query($conn, "
-                            SELECT insiden_keamanan.*, user.nama
-                            FROM insiden_keamanan
-                            JOIN user ON insiden_keamanan.id_user = user.id_user
-                            JOIN warga ON insiden_keamanan.id_user = warga.id_user
-                            JOIN alamat ON warga.id_alamat = alamat.id_alamat
-                            WHERE MONTH(insiden_keamanan.tanggal) = '$bulan'
-                            AND YEAR(insiden_keamanan.tanggal) = '$tahun'
-                            AND alamat.kecamatan = '$kecamatan'
-                            AND alamat.kelurahan = '$kelurahan'
-                            AND alamat.no_rt = '$rt'
-                            AND alamat.no_rw = '$rw'
-                            ORDER BY insiden_keamanan.tanggal DESC
-                        ");
+        SELECT insiden_keamanan.*, user.nama
+        FROM insiden_keamanan
+        JOIN user ON insiden_keamanan.id_user = user.id_user
+        JOIN warga ON insiden_keamanan.id_user = warga.id_user
+        JOIN alamat ON warga.id_alamat = alamat.id_alamat
+        WHERE MONTH(insiden_keamanan.tanggal) = '$bulan'
+        AND YEAR(insiden_keamanan.tanggal) = '$tahun'
+        AND alamat.kecamatan = '$kecamatan'
+        AND alamat.kelurahan = '$kelurahan'
+        AND alamat.no_rt = '$rt'
+        AND alamat.no_rw = '$rw'
+        ORDER BY insiden_keamanan.tanggal DESC
+    ");
 
                             $no = 1;
                             while ($data = mysqli_fetch_assoc($query)):
@@ -185,8 +185,7 @@ $bulanList = [
 
                                     <td class="text-center">
                                         <?php
-                                        // Gunakan indeks modal yang benar
-                                        $modalId = "photoModal" . $no;
+                                        $modalId = "photoModal" . ($no - 1); // Gunakan $no - 1 karena sudah di-increment
                                         ?>
 
                                         <?php if (!empty($data["foto"])): ?>
@@ -196,7 +195,6 @@ $bulanList = [
                                                 data-bs-target="#<?= $modalId; ?>">
                                                 <i class="bi bi-eye me-1"></i> Lihat Foto
                                             </button>
-
 
                                             <!-- Modal Foto -->
                                             <div class="modal fade" id="<?= $modalId; ?>" tabindex="-1" aria-hidden="true">
@@ -223,8 +221,10 @@ $bulanList = [
                                             <span class="text-muted">Tidak ada foto</span>
                                         <?php endif; ?>
                                     </td>
-                                <?php $no++;
-                            endwhile; ?>
+                                </tr>
+                            <?php
+                            endwhile; // ← Hapus $no++ yang ada di sini
+                            ?>
                         </tbody>
                     </table>
                 </div>
