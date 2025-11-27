@@ -29,20 +29,11 @@ if (isset($_POST['submit'])) {
         // Insert ke warga dengan id_alamat
         $query_warga = mysqli_query($conn, "INSERT INTO warga (id_user, hari_ronda, id_alamat) VALUES ('$id_user', '$hari_ronda', '$id_alamat')");
 
-        $id_user = $_POST['id_user'];
-        $hari_ronda = $_POST['hari_ronda'];
+        $id_user = mysqli_real_escape_string($conn, $_POST['id_user']);
+        $hari_ronda = mysqli_real_escape_string($conn, $_POST['hari_ronda']);
 
         $cek_user = mysqli_query($conn, "SELECT * FROM user WHERE id_user='$id_user' AND role='warga'");
-        if (mysqli_num_rows($cek_user) == 0) {
-            $_SESSION['alert'] = [
-                'type' => 'error',
-                'title' => 'Gagal!',
-                'message' => 'Nama tidak terdaftar sebagai warga!'
-            ];
-            header("Location: ../app/jadwal_ronda.php");
-            exit;
-        }
-
+       
         if ($query_warga) {
             $_SESSION['alert'] = [
                 'type' => 'success',

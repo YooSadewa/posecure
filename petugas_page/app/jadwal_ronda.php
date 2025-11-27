@@ -182,6 +182,23 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
     </div>
   </div>
 
+  <?php
+  // ambil list warga sekali saja
+  $query_warga = "SELECT id_user, nama FROM user WHERE role = 'warga' ORDER BY nama ASC";
+  $result_warga = mysqli_query($conn, $query_warga);
+
+  $warga_list = [];
+  while ($w = mysqli_fetch_assoc($result_warga)) {
+    $warga_list[] = $w;
+  }
+
+  // buat map nama(lowercase) => id_user untuk JS
+  $warga_map = [];
+  foreach ($warga_list as $w) {
+    $warga_map[mb_strtolower($w['nama'])] = $w['nama'];
+  }
+  ?>
+
   <!-- Modal Tambah -->
   <form action="../process/jadwal_tambah_warga_proses.php" method="POST">
     <div class="modal fade" id="modal_tambah" tabindex="-1" aria-labelledby="modal_tambah_label" aria-hidden="true">
@@ -195,19 +212,20 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
           <div class="modal-body">
             <!-- Input Nama dengan Search -->
             <div class="input-group mb-3">
-              <label for="id_user" class="input-group-text" style="width: 120px;">Nama <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="nama_warga" list="daftar_warga" placeholder="Ketik untuk mencari nama warga..." autocomplete="off" required>
+              <label for="nama_warga" class="input-group-text" style="width: 120px;">Nama <span class="text-danger">*</span></label>
+
+              <input type="text" class="form-control" id="nama_warga" list="daftar_warga"
+                placeholder="Ketik untuk mencari nama warga..." autocomplete="off" required>
+
               <datalist id="daftar_warga">
-                <?php
-                $query_warga = "SELECT id_user, nama FROM user WHERE role = 'warga' ORDER BY nama ASC";
-                $result_warga = mysqli_query($conn, $query_warga);
-                while ($warga = mysqli_fetch_assoc($result_warga)) {
-                  echo "<option value='" . htmlspecialchars($warga['nama']) . "'>";
-                }
-                ?>
+                <?php foreach ($warga_list as $w): ?>
+                  <!-- sertakan data-id agar JS bisa ambil id_user -->
+                  <option data-id="<?= htmlspecialchars($w['nama']) ?>" value="<?= htmlspecialchars($w['nama']) ?>"></option>
+                <?php endforeach; ?>
               </datalist>
+
               <!-- Hidden input untuk id_user -->
-              <input type="hidden" name="id_user" id="id_user" required>
+              <input type="hidden" name="id_user" id="id_user">
               <small class="text-muted"></small>
             </div>
 
@@ -237,47 +255,44 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
     </div>
   </form>
 
-  <script>
-    const wargaData = {
-      <?php
-      mysqli_data_seek($result_warga, 0); // Reset pointer
-      $items = [];
-      while ($warga = mysqli_fetch_assoc($result_warga)) {
-        $nama_clean = str_replace(['"', "'", "\\"], ['\\"', "\\'", "\\\\"], $warga['nama']);
-        $items[] = '"' . $nama_clean . '": "' . $warga['nama'] . '"';
-      }
-      echo implode(',', $items);
-      ?>};
 
+  <script>
+    
     const inputNama = document.getElementById("nama_warga");
     const idUserHidden = document.getElementById("id_user");
 
-    inputNama.addEventListener("input", () => {
-      const nama = inputNama.value.trim().toLowerCase();
-      const opsi = document.querySelectorAll("#daftar_warga option");
-      let valid = false;
+    // Map nama(lowercase) -> id_user dari PHP (case-insensitive)
+    const wargaMap = <?= json_encode($warga_map) ?>;
 
-      opsi.forEach(o => {
-        if (o.value.toLowerCase() === nama) {
-          idUserHidden.value = o.dataset.id;
-          valid = true;
-        }
-      });
+    inputNama.addEventListener("input", function() {
+      const nama = this.value.trim().toLowerCase();
 
-      if (!valid) {
-        idUserHidden.value = ""; // Kosongkan kalau nama tidak ada
+      if (wargaMap[nama]) {
+        idUserHidden.value = wargaMap[nama];
+      } else {
+        idUserHidden.value = "";
       }
     });
 
-    // Cek sebelum submit
-    document.querySelector("form").addEventListener("submit", function(e) {
+    // Validasi sebelum submit (jaga kalau JS diaktifkan)
+    document.querySelector('form[action="../process/jadwal_tambah_warga_proses.php"]').addEventListener('submit', function(e) {
       if (idUserHidden.value === "") {
         e.preventDefault();
-        alert("Nama tidak ditemukan dalam database! Pilih nama yang sudah terdaftar.");
+        // gunakan SweetAlert jika sudah di-include
+        if (window.Swal) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Nama tidak terdaftar!',
+            text: 'Pilih nama dari daftar warga yang terdaftar.'
+          });
+        } else {
+          alert('Nama tidak terdaftar! Pilih nama dari daftar warga yang terdaftar.');
+        }
         inputNama.focus();
       }
     });
   </script>
+
 
   <script>
     // Dropdown profil
