@@ -3,14 +3,30 @@ session_start();
 include "../../koneksi_database.php";
 
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-    header("location: login_page.php?pesan=belum_login");
-    exit;
+  header("location: login_page.php?pesan=belum_login");
+  exit;
 }
 
 if ($_SESSION['role'] !== 'petugas_keamanan') {
-    echo "Anda tidak memiliki akses ke halaman ini!";
-    exit;
+  echo "Anda tidak memiliki akses ke halaman ini!";
+  exit;
 }
+
+// Pagination config
+$limit = 9;
+
+// Halaman aktif
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$start = ($page - 1) * $limit;
+
+// Hitung total data
+$countQuery = mysqli_query($conn, "SELECT COUNT(*) AS total FROM warga");
+$countData = mysqli_fetch_assoc($countQuery);
+$totalData = $countData['total'];
+
+// Hitung total halaman
+$totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
+
 
 ?>
 <!DOCTYPE html>
@@ -139,11 +155,27 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
       <div class="d-flex justify-content-end mt-3 pe-3">
         <nav>
           <ul class="pagination mb-0">
-            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+
+            <!-- Tombol Previous -->
+            <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
+              <a class="page-link" href="?page=<?= max(1, $page - 1) ?>">Previous</a>
+            </li>
+
+            <?php
+            // Tentukan range angka
+            $startPage = max(1, $page - 1);
+            $endPage = min($totalPage, $page + 1);
+
+            for ($i = $startPage; $i <= $endPage; $i++): ?>
+              <li class="page-item <?= ($page == $i) ? 'active' : '' ?>">
+                <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+              </li>
+            <?php endfor; ?>
+
+            <!-- Tombol Next -->
+            <li class="page-item <?= ($page >= $totalPage) ? 'disabled' : '' ?>">
+              <a class="page-link" href="?page=<?= min($totalPage, $page + 1) ?>">Next</a>
+            </li>
           </ul>
         </nav>
       </div>
@@ -151,48 +183,101 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
   </div>
 
   <!-- Modal Tambah -->
-  <form action="../process/jadwal_tambah_warga_proses.php" method="POST" enctype="multipart/form-data">
-  <div class="modal fade modal-fullscreen-md-down" id="modal_tambah" tabindex="-1" aria-labelledby="modal_tambah_label" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="modal_tambah_label">Daftar Jadwal Ronda Warga</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-
-        <div class="modal-body">
-
-          <div class="input-group mb-3">
-            <label class="input-group-text" style="width: 120px;">Nama <span class="text-danger ms-1">*</span></label>
-            <input type="text" name="id_user" class="form-control" id="nama" placeholder="Masukkan nama warga" required>
+  <form action="../process/jadwal_tambah_warga_proses.php" method="POST">
+    <div class="modal fade" id="modal_tambah" tabindex="-1" aria-labelledby="modal_tambah_label" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modal_tambah_label">Daftar Jadwal Ronda Warga</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
 
-          <div class="input-group mb-3">
-            <label class="input-group-text" style="width: 120px;">Pilih Hari <span class="text-danger ms-1">*</span></label>
-            <select name="hari_ronda" id="hari_ronda" class="form-select" required>
-              <option selected disabled>Pilih hari...</option>
-              <option>Senin</option>
-              <option>Selasa</option>
-              <option>Rabu</option>
-              <option>Kamis</option>
-              <option>Jumat</option>
-              <option>Sabtu</option>
-              <option>Minggu</option>
-            </select>
+          <div class="modal-body">
+            <!-- Input Nama dengan Search -->
+            <div class="input-group mb-3">
+              <label for="id_user" class="input-group-text" style="width: 120px;">Nama <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="nama_warga" list="daftar_warga" placeholder="Ketik untuk mencari nama warga..." autocomplete="off" required>
+              <datalist id="daftar_warga">
+                <?php
+                $query_warga = "SELECT id_user, nama FROM user WHERE role = 'warga' ORDER BY nama ASC";
+                $result_warga = mysqli_query($conn, $query_warga);
+                while ($warga = mysqli_fetch_assoc($result_warga)) {
+                  echo "<option value='" . htmlspecialchars($warga['nama']) . "'>";
+                }
+                ?>
+              </datalist>
+              <!-- Hidden input untuk id_user -->
+              <input type="hidden" name="id_user" id="id_user" required>
+              <small class="text-muted"></small>
+            </div>
+
+            <!-- Select Hari Ronda -->
+            <div class="input-group mb-3">
+              <label for="hari_ronda" class="input-group-text" style="width: 120px;">Pilih Hari <span class="text-danger">*</span></label>
+              <select name="hari_ronda" id="hari_ronda" class="form-select" required>
+                <option selected disabled value="">Pilih hari...</option>
+                <option value="Senin">Senin</option>
+                <option value="Selasa">Selasa</option>
+                <option value="Rabu">Rabu</option>
+                <option value="Kamis">Kamis</option>
+                <option value="Jumat">Jumat</option>
+                <option value="Sabtu">Sabtu</option>
+                <option value="Minggu">Minggu</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            <button type="submit" class="btn btn-primary" name="submit">Daftarkan</button>
           </div>
 
         </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-          <button type="submit" class="btn btn-primary" name="submit">Daftarkan</button>
-        </div>
-
       </div>
     </div>
-  </div>
-</form>
+  </form>
 
+  <script>
+    const wargaData = {
+      <?php
+      mysqli_data_seek($result_warga, 0); // Reset pointer
+      $items = [];
+      while ($warga = mysqli_fetch_assoc($result_warga)) {
+        $nama_clean = str_replace(['"', "'", "\\"], ['\\"', "\\'", "\\\\"], $warga['nama']);
+        $items[] = '"' . $nama_clean . '": "' . $warga['nama'] . '"';
+      }
+      echo implode(',', $items);
+      ?>};
+
+    const inputNama = document.getElementById("nama_warga");
+    const idUserHidden = document.getElementById("id_user");
+
+    inputNama.addEventListener("input", () => {
+      const nama = inputNama.value.trim().toLowerCase();
+      const opsi = document.querySelectorAll("#daftar_warga option");
+      let valid = false;
+
+      opsi.forEach(o => {
+        if (o.value.toLowerCase() === nama) {
+          idUserHidden.value = o.dataset.id;
+          valid = true;
+        }
+      });
+
+      if (!valid) {
+        idUserHidden.value = ""; // Kosongkan kalau nama tidak ada
+      }
+    });
+
+    // Cek sebelum submit
+    document.querySelector("form").addEventListener("submit", function(e) {
+      if (idUserHidden.value === "") {
+        e.preventDefault();
+        alert("Nama tidak ditemukan dalam database! Pilih nama yang sudah terdaftar.");
+        inputNama.focus();
+      }
+    });
+  </script>
 
   <script>
     // Dropdown profil
@@ -216,17 +301,17 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
   </script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <?php if (isset($_SESSION['alert'])) : ?>
-        <script>
-            Swal.fire({
-                icon: '<?= $_SESSION['alert']['type'] ?>',
-                title: '<?= $_SESSION['alert']['title'] ?>',
-                text: '<?= $_SESSION['alert']['message'] ?>',
+  <?php if (isset($_SESSION['alert'])) : ?>
+    <script>
+      Swal.fire({
+        icon: '<?= $_SESSION['alert']['type'] ?>',
+        title: '<?= $_SESSION['alert']['title'] ?>',
+        text: '<?= $_SESSION['alert']['message'] ?>',
 
-            });
-        </script>
-        <?php unset($_SESSION['alert']); ?>
-    <?php endif; ?>
+      });
+    </script>
+    <?php unset($_SESSION['alert']); ?>
+  <?php endif; ?>
 </body>
 
 </html>
