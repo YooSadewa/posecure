@@ -185,6 +185,49 @@ $foto_profil = $data['foto']
   </div>
 </div>
 
+<!-- MODAL GANTI PASSWORD -->
+<div class="modal fade" id="gantiPasswordModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">Ganti Password</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form action="../process/ganti_password_proses.php" method="POST">
+        <div class="modal-body">
+
+          <input type="hidden" name="id_user" value="<?= $data['id_user'] ?>">
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Password Lama<span class="text-danger">*</span></label>
+            <input type="password" name="password_lama" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Password Baru<span class="text-danger">*</span></label>
+            <input type="password" name="password_baru" class="form-control" required minlength="6">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Konfirmasi Password Baru<span class="text-danger">*</span></label>
+            <input type="password" name="konfirmasi_password" class="form-control" required minlength="6">
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-success">Simpan</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+
 <style>
   .header-title {
     font-size: 32px;
