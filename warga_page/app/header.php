@@ -212,15 +212,30 @@ $hari = !empty($data['hari_ronda']) ? $data['hari_ronda'] : "Hari Ronda Belum Di
       </div>
       <div class="modal-body px-4 pb-4">
         <div class="text-center mb-2">
-          <img
-            src="../../assets/warga_img/profile_img/<?= $user_data['foto'] ?>"
-            class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center"
-            style="width: 100px; height: 100px">
-          <a
-            href="#"
-            class="d-block mt-2 text-decoration-none text-primary fw-medium">
-            Edit Foto Profil
-          </a>
+          <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center position-relative overflow-hidden"
+            style="width:100px;height:100px;">
+
+            <?php if ($data['foto']) { ?>
+              <img id="previewImage"
+                src="../../assets/warga_img/profile_img/<?= $data['foto'] ?>"
+                class="w-100 h-100 object-fit-cover rounded-circle">
+            <?php } else { ?>
+              <i id="defaultIcon" class="fas fa-user fa-3x text-secondary"></i>
+            <?php } ?>
+
+          </div>
+
+          <form action="../process/update_foto_profil.php" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="id_user" value="<?= $data['id_user'] ?>">
+
+            <a href="#" onclick="document.getElementById('editFotoInput').click(); return false;"
+              class="d-block mt-2 text-decoration-none text-primary fw-medium">
+              Edit Foto Profil
+            </a>
+
+            <input type="file" id="editFotoInput" name="foto_baru" accept="image/*" hidden
+              onchange="this.form.submit()">
+          </form>
         </div>
 
         <div class="text-center mb-4">

@@ -185,6 +185,93 @@ $foto_profil = $data['foto']
   </div>
 </div>
 
+<div
+  class="modal fade modal-fullscreen-md-down"
+  id="gantiPasswordModal"
+  tabindex="-1"
+  aria-labelledby="gantiPasswordLabel"
+  aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="../process/ganti_password_proses.php" method="POST">
+        <input type="hidden" name="id_user" value="<?= $data['id_user'] ?>">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="gantiPasswordLabel">Ganti Password</h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Password Lama -->
+          <div class="mb-3">
+            <label for="passwordLama" class="form-label fw-semibold">
+              Password Lama <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <input
+                type="password"
+                class="form-control"
+                id="passwordLama"
+                name="password_lama"
+                required />
+              <button class="btn btn-outline-light border text-secondary" type="button" onclick="togglePassword('passwordLama', this)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Password Baru -->
+          <div class="mb-3">
+            <label for="passwordBaru" class="form-label fw-semibold">
+              Password Baru <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <input
+                type="password"
+                class="form-control"
+                id="passwordBaru"
+                name="password_baru"
+                required />
+              <button class="btn btn-outline-light border text-secondary" type="button" onclick="togglePassword('passwordBaru', this)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Konfirmasi Password Baru -->
+          <div class="mb-3">
+            <label for="passwordKonfir" class="form-label fw-semibold">
+              Konfirmasi Password Baru <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <input
+                type="password"
+                class="form-control"
+                id="passwordKonfir"
+                name="konfirmasi_password"
+                required />
+              <button class="btn btn-outline-light border text-secondary" type="button" onclick="togglePassword('passwordKonfir', this)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Close
+          </button>
+          <button type="submit" class="btn btn-primary" name="submit">
+            Edit Password
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
 <style>
   .header-title {
     font-size: 32px;
@@ -216,6 +303,34 @@ $foto_profil = $data['foto']
     if (!profileButton.contains(e.target) && !profileDropdown.contains(e.target)) {
       profileDropdown.classList.add("d-none");
       caretIcon.classList.remove("rotate-180");
+    }
+  });
+
+  function togglePassword(inputId, button) {
+    const input = document.getElementById(inputId);
+    const icon = button.querySelector('i');
+
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.classList.remove('bi-eye');
+      icon.classList.add('bi-eye-slash');
+    } else {
+      input.type = 'password';
+      icon.classList.remove('bi-eye-slash');
+      icon.classList.add('bi-eye');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const modalParam = urlParams.get('modal');
+
+    if (modalParam === 'profile') {
+      const profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
+      profileModal.show();
+    } else if (modalParam === 'gantiPassword') {
+      const gantiPasswordModal = new bootstrap.Modal(document.getElementById('gantiPasswordModal'));
+      gantiPasswordModal.show();
     }
   });
 </script>
