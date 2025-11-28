@@ -1,12 +1,11 @@
 <?php
-// sidebar.php
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 
-<button class="btn btn-success position-fixed top-0 end-0 m-3" 
-        type="button" 
-        id="sidebarToggle"
-        style="z-index: 1000;">
+<button class="btn btn-success position-fixed top-0 end-0 m-3"
+    type="button"
+    id="sidebarToggle"
+    style="z-index: 1000;">
     <i class="fa-solid fa-bars"></i>
 </button>
 
@@ -15,8 +14,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <nav class="sidebar d-flex flex-column justify-content-between position-fixed top-0 start-0 h-100 text-white py-4" id="sidebar">
 
     <div class="px-2">
-        <button class="btn btn-close btn-close-white position-absolute top-0 end-0 m-3" 
-                id="sidebarClose"></button>
+        <button class="btn btn-close btn-close-white position-absolute top-0 end-0 m-3"
+            id="sidebarClose"></button>
 
         <div class="text-center mb-4">
             <img src="../../assets/img/white_logo.png" alt="Logo" class="mx-auto" style="width: 130px;">
@@ -24,22 +23,22 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </div>
         <div class="d-flex flex-column gap-1">
             <a href="dashboard.php"
-                class="sidebar-link d-flex align-items-center gap-3 py-3 px-4 rounded-3 text-decoration-none <?= $current_page == 'Dashboard.php' ? 'active' : '' ?>">
+                class="sidebar-link d-flex align-items-center gap-3 py-3 px-4 rounded-3 text-decoration-none <?= $current_page == 'dashboard.php' ? 'active' : '' ?>">
                 <i class="fa-solid fa-house fs-5" style="width: 20px;"></i>
                 Dashboard
             </a>
             <a href="daftar_akun_warga.php"
-                class="sidebar-link d-flex align-items-center gap-3 py-3 px-4 rounded-3 text-decoration-none <?= $current_page == 'Daftar_Akun_Warga.php' ? 'active' : '' ?>">
+                class="sidebar-link d-flex align-items-center gap-3 py-3 px-4 rounded-3 text-decoration-none <?= $current_page == 'daftar_akun_warga.php' ? 'active' : '' ?>">
                 <i class="fa-solid fa-users fs-5" style="width: 20px;"></i>
                 Daftar Akun Warga
             </a>
             <a href="jadwal_ronda.php"
-                class="sidebar-link d-flex align-items-center gap-3 py-3 px-4 rounded-3 text-decoration-none <?= $current_page == 'Jadwal_Ronda.php' ? 'active' : '' ?>">
+                class="sidebar-link d-flex align-items-center gap-3 py-3 px-4 rounded-3 text-decoration-none <?= $current_page == 'jadwal_ronda.php' ? 'active' : '' ?>">
                 <i class="fa-solid fa-calendar-days fs-5" style="width: 20px;"></i>
                 Jadwal Ronda
             </a>
             <a href="laporan_insiden.php"
-                class="sidebar-link d-flex align-items-center gap-3 py-3 px-4 rounded-3 text-decoration-none <?= $current_page == 'Laporan_Insiden.php' ? 'active' : '' ?>">
+                class="sidebar-link d-flex align-items-center gap-3 py-3 px-4 rounded-3 text-decoration-none <?= $current_page == 'laporan_insiden.php' ? 'active' : '' ?>">
                 <i class="fa-solid fa-circle-exclamation fs-5" style="width: 20px;"></i>
                 Laporan Insiden
             </a>
@@ -104,7 +103,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         #sidebarToggle {
             display: none;
         }
-        
+
         #sidebarClose {
             display: none;
         }
