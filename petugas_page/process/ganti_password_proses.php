@@ -3,7 +3,7 @@ session_start();
 include "../../koneksi_database.php";
 
 if (!isset($_POST['id_user'])) {
-    echo "<script>alert('Akses tidak valid'); window.location.href='../pages/dashboard.php';</script>";
+    echo "<script>alert('Akses tidak valid'); window.location.href='../app/dashboard.php';</script>";
     exit;
 }
 
