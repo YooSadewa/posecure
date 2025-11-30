@@ -1,4 +1,4 @@
-<?php  
+<?php
 session_start();
 include "../../koneksi_database.php";
 
@@ -21,9 +21,8 @@ if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
 
     if (move_uploaded_file($_FILES['foto']['tmp_name'], $fullpath)) {
         $foto = $filename;
-    
     } else {
-        $foto = null; 
+        $foto = null;
     }
 } else {
     $foto = null;
@@ -40,12 +39,29 @@ $getID = mysqli_query($conn, "
 $data  = mysqli_fetch_assoc($getID);
 
 if (!$data) {
-    $id_user = "W-01"; 
+    $id_user = "W-01";
 } else {
-    $lastID = $data['id_user']; 
-    $num = (int) substr($lastID, 2); 
+    $lastID = $data['id_user'];
+    $num = (int) substr($lastID, 2);
     $num++;
-    $id_user = "W-" . sprintf("%02d", $num); 
+    $id_user = "W-" . sprintf("%02d", $num);
+}
+
+$blok_rumah = $_POST['blok_rumah'];
+
+/* Cek blok rumah apakah sudah ada  */
+$cekBlok = mysqli_query($conn, "
+    SELECT blok_rumah FROM warga WHERE blok_rumah = '$blok_rumah'
+");
+
+if (mysqli_num_rows($cekBlok) > 0) {
+    $_SESSION['alert'] = [
+        'type' => 'error',
+        'title' => 'Duplikat Blok!',
+        'message' => 'Blok rumah sudah ada. Tidak dapat menambahkan data yang sama.'
+    ];
+    header("Location: ../app/daftar_akun_warga.php");
+    exit;
 }
 
 
@@ -68,13 +84,13 @@ $queryWarga = mysqli_query($conn, "
 
 if (!$queryWarga) {
     $_SESSION['alert'] = [
-    'type' => 'error',
-    'title' => 'Gagal!',
-    'message' => 'Data warga gagal ditambahkan!'
-];
+        'type' => 'error',
+        'title' => 'Gagal!',
+        'message' => 'Data warga gagal ditambahkan!'
+    ];
 
-header("Location: ../app/daftar_akun_warga.php");
-exit;
+    header("Location: ../app/daftar_akun_warga.php");
+    exit;
 }
 
 $_SESSION['alert'] = [
@@ -85,5 +101,3 @@ $_SESSION['alert'] = [
 
 header("Location: ../app/daftar_akun_warga.php");
 exit;
-
-?>

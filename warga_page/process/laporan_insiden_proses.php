@@ -58,8 +58,8 @@ $queryInsiden = mysqli_query($conn, "
     VALUES ('$id_insiden', '$id_user', '$tanggal', '$jam', '$jenis_insiden', '$namaFoto', '$keterangan')
 ");
 
-// ⭐ PERBAIKAN DI SINI
-if ($queryInsiden) {  // ✅ JIKA BERHASIL (tanpa tanda !)
+// Jika Berhasil
+if ($queryInsiden) { 
     $_SESSION['alert'] = [
         'type' => 'success',
         'title' => 'Berhasil!',

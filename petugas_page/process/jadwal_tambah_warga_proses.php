@@ -31,7 +31,7 @@ if (isset($_POST['submit'])) {
         exit;
     }
 
-    // ===== TAMBAHKAN VALIDASI INI ===== 
+    
     // Cek apakah warga sudah memiliki jadwal di hari yang sama
     $cek_duplikat = mysqli_query($conn, "
         SELECT * FROM warga 
@@ -48,8 +48,7 @@ if (isset($_POST['submit'])) {
         header("Location: ../app/jadwal_ronda.php");
         exit;
     }
-    // ===== AKHIR VALIDASI =====
-
+    
     // Proses update jadwal ronda
     $query = mysqli_query($conn, "
         UPDATE warga 
