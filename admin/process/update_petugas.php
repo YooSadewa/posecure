@@ -18,7 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $update_user = mysqli_query($conn, "UPDATE user SET username = '$username' WHERE id_user = '$id_user'");
 
   if (!$update_user) {
-    die("Gagal Update User: " . mysqli_error($conn));
+    $_SESSION['alert'] = [
+      'icon' => 'error',
+      'title' => 'Gagal!',
+      'text' => 'Gagal mengupdate data petugas keamanan: ' . mysqli_error($conn)
+    ];
+    header("Location: ../app/dashboard_page.php");
+    exit;
   }
 
   $data_alamat = mysqli_fetch_assoc(mysqli_query($conn, "SELECT id_alamat FROM petugas_keamanan WHERE id_user = '$id_user'"));
@@ -31,16 +37,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $update_alamat = mysqli_query($conn, $query_alamat);
 
     if (!$update_alamat) {
-      die("Gagal Update Alamat: " . mysqli_error($conn));
+      $_SESSION['alert'] = [
+        'icon' => 'error',
+        'title' => 'Gagal!',
+        'text' => 'Gagal mengupdate data alamat petugas keamanan: ' . mysqli_error($conn)
+      ];
+      header("Location: ../app/dashboard_page.php");
+      exit;
     }
   }
-  echo "
-<script>
-    alert('Data petugas keamanan berhasil diperbarui.');
-    window.location.href = '../app/dashboard_page.php';
-</script>
-";
+  $_SESSION['alert'] = [
+    'icon' => 'success',
+    'title' => 'Berhasil!',
+    'text' => 'Data petugas keamanan berhasil diperbarui.'
+  ];
+  header("Location: ../app/dashboard_page.php");
+  exit;
 } else {
   header("Location: ../app/dashboard_page.php");
-  
 }

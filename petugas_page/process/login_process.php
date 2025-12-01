@@ -34,6 +34,11 @@ if ($row > 0) {
     $_SESSION['nama'] = $data['nama'];
     $_SESSION['role'] = $data['role'];
     $_SESSION['foto'] = $data['foto'];
+    $_SESSION['alert'] = [
+      'icon' => 'success',
+      'title' => 'Login Berhasil!',
+      'timer' => 1500
+    ];
 
     if ($data["role"] === "petugas_keamanan") {
       $query_petugas = mysqli_query($conn, "SELECT id_alamat FROM petugas_keamanan WHERE id_user = '" . $data['id_user'] . "'");
@@ -44,10 +49,20 @@ if ($row > 0) {
       header("location:../../admin/app/dashboard_page.php");
     }
   } else {
+    $_SESSION['alert'] = [
+      'icon' => 'error',
+      'title' => 'Login Gagal!',
+      'timer' => 1500
+    ];
     header("location:../app/login_page.php?pesan=password_salah&value_username=" . $_POST['username']);
     exit;
   }
 } else {
+  $_SESSION['alert'] = [
+    'icon' => 'error',
+    'title' => 'Login Gagal!',
+    'timer' => 1500
+  ];
   header("location:../app/login_page.php?pesan=pengguna_tidak_ditemukan&value_username=" . $_POST['username']);
   exit;
 }

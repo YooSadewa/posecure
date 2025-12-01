@@ -22,18 +22,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ekstensi_file  = strtolower(end($ekstensi_file));
 
     if (!in_array($ekstensi_file, $ekstensi_valid)) {
-      echo "<script>
-                    alert('Format file tidak valid! Hanya JPG, JPEG, atau PNG.'); 
-                    window.location.href='../app/dashboard_page.php';
-                  </script>";
+      $_SESSION['alert'] = [
+        'icon' => 'error',
+        'title' => 'Gagal!',
+        'text' => 'Format file tidak valid! Hanya JPG, JPEG, atau PNG.'
+      ];
+      header("Location: ../app/dashboard_page.php");
       exit;
     }
 
     if ($ukuran_file > 2000000) {
-      echo "<script>
-                    alert('Ukuran file terlalu besar (Max 2MB)!'); 
-                    window.location.href='../app/dashboard_page.php';
-                  </script>";
+      $_SESSION['alert'] = [
+        'icon' => 'error',
+        'title' => 'Gagal!',
+        'text' => 'Ukuran file terlalu besar (Max 2MB)!'
+      ];
+      header("Location: ../app/dashboard_page.php");
       exit;
     }
 
@@ -56,25 +60,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       if (mysqli_query($conn, $query)) {
         $_SESSION['foto'] = $nama_baru;
-
-        echo "<script>
-                        alert('Foto profil berhasil diperbarui!'); 
-                        window.location.href='../app/dashboard_page.php';
-                      </script>";
+        $_SESSION['alert'] = [
+          'icon' => 'success',
+          'title' => 'Berhasil!',
+          'text' => 'Foto profil berhasil diperbarui!.',
+          'timer' => 1500
+        ];
+        header("Location: ../app/dashboard_page.php");
+        exit;
       } else {
-        die("Gagal Update Database: " . mysqli_error($conn));
+        $_SESSION['alert'] = [
+          'icon' => 'error',
+          'title' => 'Gagal!',
+          'text' => 'Gagal mengupdate data profil: ' . mysqli_error($conn)
+        ];
+        header("Location: ../app/dashboard_page.php");
+        exit;
       }
     } else {
-      echo "<script>
-                    alert('Gagal mengupload gambar ke server!'); 
-                    window.location.href='../app/dashboard_page.php';
-                  </script>";
+      $_SESSION['alert'] = [
+        'icon' => 'error',
+        'title' => 'Gagal!',
+        'text' => 'Gagal mengupload gambar ke server!'
+      ];
+      header("Location: ../app/dashboard_page.php");
+      exit;
     }
   } else {
-    echo "<script>
-                alert('Silakan pilih foto terlebih dahulu.'); 
-                window.location.href='../app/dashboard_page.php';
-              </script>";
+    $_SESSION['alert'] = [
+      'icon' => 'error',
+      'title' => 'Gagal!',
+      'text' => 'Silakan pilih foto terlebih dahulu.'
+    ];
+    header("Location: ../app/dashboard_page.php");
+    exit;
   }
 } else {
   header("Location: ../app/dashboard_page.php");
