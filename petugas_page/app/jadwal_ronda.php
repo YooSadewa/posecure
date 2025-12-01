@@ -19,14 +19,43 @@ $limit = 9;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $start = ($page - 1) * $limit;
 
-// Hitung total data (berdasarkan warga yang punya jadwal ronda)
-$countQuery = mysqli_query($conn, "SELECT COUNT(DISTINCT id_user) AS total FROM warga WHERE hari_ronda IS NOT NULL AND hari_ronda != ''");
+// Ambil id_alamat
+$id_alamat = isset($_GET['id_alamat']) ? $_GET['id_alamat'] : 'A-01';
+$id_alamat_esc = mysqli_real_escape_string($conn, $id_alamat);
+
+// Hitung total data hanya untuk alamat tersebut
+$countQuery = mysqli_query($conn, "
+    SELECT COUNT(DISTINCT id_user) AS total 
+    FROM warga 
+    WHERE hari_ronda IS NOT NULL 
+    AND hari_ronda != '' 
+    AND id_alamat = '$id_alamat_esc'
+");
 $countData = mysqli_fetch_assoc($countQuery);
 $totalData = $countData['total'];
 
 // Hitung total halaman
-$totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
+$totalPage = max(1, ceil($totalData / $limit));
 
+$query_warga = "
+  SELECT user.id_user, user.nama 
+  FROM user
+  JOIN warga ON user.id_user = warga.id_user
+  WHERE user.role = 'warga'
+  AND warga.id_alamat = '$id_alamat_esc'
+  ORDER BY user.nama ASC
+";
+$result_warga = mysqli_query($conn, $query_warga);
+
+$warga_list = [];
+$warga_map = [];
+
+if ($result_warga && mysqli_num_rows($result_warga) > 0) {
+  while ($row = mysqli_fetch_assoc($result_warga)) {
+    $warga_list[] = $row;
+    $warga_map[strtolower($row['nama'])] = $row['id_user'];
+  }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -95,7 +124,7 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
           <button type="button" class="btn btn-success px-3 py-2 flex-fill" data-bs-toggle="modal" data-bs-target="#modal_tambah">
             <i class="fa-solid fa-plus me-1"></i> Tambahkan Warga
           </button>
-          <a href="jadwal_ronda_bulanan.php" class="btn btn-success px-3 py-2 flex-fill"> Lihat Riwayat Absensi</a>
+          <a href="jadwal_ronda_bulanan.php?id_alamat=<?= urlencode($id_alamat) ?>" class="btn btn-success px-3 py-2 flex-fill">Lihat Riwayat Absensi</a>
         </div>
       </div>
 
@@ -117,21 +146,28 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
             <?php
             $hariList = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 
-            // Ambil data berdasarkan hari DENGAN LIMIT dan OFFSET
+            // Ambil data berdasarkan hari DENGAN LIMIT dan OFFSET (per-hari & per-id_alamat)
             $data = [];
             foreach ($hariList as $h) {
-              // TAMBAHKAN LIMIT DAN OFFSET DI SINI
-              $query = mysqli_query($conn, "
-                SELECT warga.hari_ronda, user.nama 
-                FROM warga 
-                JOIN user ON warga.id_user = user.id_user 
-                WHERE warga.hari_ronda='$h'
-                LIMIT $limit OFFSET $start
-              ");
+              $h_esc = mysqli_real_escape_string($conn, $h);
 
+              $sql = "
+              SELECT user.nama
+              FROM warga
+              JOIN user ON warga.id_user = user.id_user
+              WHERE warga.hari_ronda = '$h_esc'
+                AND warga.id_alamat = '$id_alamat_esc'
+              ORDER BY user.nama ASC
+              LIMIT $limit OFFSET $start
+            ";
+
+              $queryNama = mysqli_query($conn, $sql);
               $isi = [];
-              while ($row = mysqli_fetch_assoc($query)) {
-                $isi[] = $row['nama'];
+
+              if ($queryNama) {
+                while ($row = mysqli_fetch_assoc($queryNama)) {
+                  $isi[] = $row['nama'];
+                }
               }
 
               // jika tidak ada data, tampilkan "-"
@@ -139,7 +175,7 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
                 $isi[] = "-";
               }
 
-              // simpan 9 baris
+              // simpan $limit baris untuk hari ini
               for ($i = 0; $i < $limit; $i++) {
                 $data[$i][$h] = isset($isi[$i]) ? $isi[$i] : "-";
               }
@@ -149,7 +185,7 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
             <?php for ($i = 0; $i < $limit; $i++): ?>
               <tr>
                 <?php foreach ($hariList as $h): ?>
-                  <td><?= $data[$i][$h] ?></td>
+                  <td><?= htmlspecialchars($data[$i][$h]) ?></td>
                 <?php endforeach; ?>
               </tr>
             <?php endfor; ?>
@@ -157,55 +193,38 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
         </table>
       </div>
 
+      <!-- Pagination -->
       <div class="d-flex justify-content-end mt-3 pe-3">
         <nav>
-          <ul class="pagination mb-0">
-
-            <!-- Pagination -->
+        <ul class="pagination mb-0">
             <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
-              <a class="page-link" href="?page=<?= max(1, $page - 1) ?>">Previous</a>
+              <a class="page-link" href="?page=<?= max(1, $page - 1) ?>&id_alamat=<?= urlencode($id_alamat) ?>">Previous</a>
             </li>
 
-            <?php
-            // Tentukan range angka
+          <?php
             $startPage = max(1, $page - 1);
             $endPage = min($totalPage, $page + 1);
 
             for ($i = $startPage; $i <= $endPage; $i++): ?>
               <li class="page-item <?= ($page == $i) ? 'active' : '' ?>">
-                <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                <a class="page-link" href="?page=<?= $i ?>&id_alamat=<?= urlencode($id_alamat) ?>"><?= $i ?></a>
               </li>
             <?php endfor; ?>
 
-            <!-- Tombol Next -->
+
             <li class="page-item <?= ($page >= $totalPage) ? 'disabled' : '' ?>">
-              <a class="page-link" href="?page=<?= min($totalPage, $page + 1) ?>">Next</a>
+              <a class="page-link" href="?page=<?= min($totalPage, $page + 1) ?>&id_alamat=<?= urlencode($id_alamat) ?>">Next</a>
             </li>
           </ul>
         </nav>
       </div>
     </div>
   </div>
-
-  <?php
-  // ambil list warga sekali saja
-  $query_warga = "SELECT id_user, nama FROM user WHERE role = 'warga' ORDER BY nama ASC";
-  $result_warga = mysqli_query($conn, $query_warga);
-
-  $warga_list = [];
-  while ($w = mysqli_fetch_assoc($result_warga)) {
-    $warga_list[] = $w;
-  }
-
-  // buat map nama(lowercase) => id_user untuk JS
-  $warga_map = [];
-  foreach ($warga_list as $w) {
-    $warga_map[mb_strtolower($w['nama'])] = $w['id_user'];
-  }
-  ?>
+  
 
   <!-- Modal Tambah -->
   <form action="../process/jadwal_tambah_warga_proses.php" method="POST">
+    <input type="hidden" name="id_alamat" value="<?= htmlspecialchars($id_alamat) ?>">
     <div class="modal fade" id="modal_tambah" tabindex="-1" aria-labelledby="modal_tambah_label" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -214,25 +233,18 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
 
-          <div class="modal-body">
-            
+            <div class="modal-body">
             <div class="input-group mb-3">
-              <label for="nama_warga" class="input-group-text" style="width: 120px;">Nama <span class="text-danger">*</span></label>
-
-              <input type="text" class="form-control" id="nama_warga" list="daftar_warga"
-                placeholder="Ketik untuk mencari nama warga..." autocomplete="off" required>
-
-              <datalist id="daftar_warga">
-                <?php foreach ($warga_list as $w): ?>
-                  <option data-id="<?= htmlspecialchars($w['nama']) ?>" value="<?= htmlspecialchars($w['nama']) ?>"></option>
-                <?php endforeach; ?>
-              </datalist>
-
-              <input type="hidden" name="id_user" id="id_user">
-              <small class="text-muted"></small>
+                <label for="nama_warga" class="input-group-text" style="width: 120px;">Nama <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="nama_warga" list="daftar_warga" placeholder="Ketik untuk mencari nama warga..." autocomplete="off" required>
+                <input type="hidden" name="id_user" id="id_user">
             </div>
 
-            <!-- Select Hari Ronda -->
+            <datalist id="daftar_warga">
+              <?php foreach ($warga_list as $w): ?>
+                <option value="<?= htmlspecialchars($w['nama']) ?>"></option>
+              <?php endforeach; ?>
+            </datalist>
             <div class="input-group mb-3">
               <label for="hari_ronda" class="input-group-text" style="width: 120px;">Pilih Hari <span class="text-danger">*</span></label>
               <select name="hari_ronda" id="hari_ronda" class="form-select" required>
@@ -312,6 +324,7 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
       });
     }
   </script>
+
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <?php if (isset($_SESSION['alert'])) : ?>
@@ -320,8 +333,7 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
         icon: '<?= $_SESSION['alert']['type'] ?>',
         title: '<?= $_SESSION['alert']['title'] ?>',
         text: '<?= $_SESSION['alert']['message'] ?>',
-
-      });
+     });
     </script>
     <?php unset($_SESSION['alert']); ?>
   <?php endif; ?>

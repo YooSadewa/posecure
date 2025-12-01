@@ -44,7 +44,7 @@ $nama_bulan = [
   12 => 'Desember'
 ];
 
-$id_alamat = $_SESSION['id_alamat'];
+$id_alamat = isset($_GET['id_alamat']) ? $_GET['id_alamat'] : $_SESSION['id_alamat'];
 
 $stmt_warga = $conn->prepare(
   "SELECT DISTINCT u.id_user, u.nama, w.hari_ronda

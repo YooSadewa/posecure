@@ -6,6 +6,7 @@ if (isset($_POST['submit'])) {
 
     $id_user = mysqli_real_escape_string($conn, $_POST['id_user']);
     $hari_ronda = mysqli_real_escape_string($conn, $_POST['hari_ronda']);
+    $id_alamat = mysqli_real_escape_string($conn, $_POST['id_alamat']);
 
     // Validasi id_user
     if (empty($id_user)) {
@@ -14,12 +15,12 @@ if (isset($_POST['submit'])) {
             'title' => 'Gagal!',
             'message' => 'Nama tidak valid! Pilih nama dari daftar.'
         ];
-        header("Location: ../app/jadwal_ronda.php");
+        header("Location: ../app/jadwal_ronda.php?id_alamat=" . urlencode($id_alamat));
         exit;
     }
 
-    // Cek apakah user ada di tabel warga
-    $cek = mysqli_query($conn, "SELECT * FROM warga WHERE id_user = '$id_user'");
+    // Cek apakah user ada di tabel warga DAN ambil hari_ronda sekaligus
+    $cek = mysqli_query($conn, "SELECT hari_ronda FROM warga WHERE id_user = '$id_user'");
 
     if (mysqli_num_rows($cek) == 0) {
         $_SESSION['alert'] = [
@@ -27,25 +28,22 @@ if (isset($_POST['submit'])) {
             'title' => 'Gagal!',
             'message' => 'Warga belum terdaftar dalam tabel warga!'
         ];
-        header("Location: ../app/jadwal_ronda.php");
+        header("Location: ../app/jadwal_ronda.php?id_alamat=" . urlencode($id_alamat));
         exit;
     }
 
-    
-    // Cek apakah warga sudah memiliki jadwal di hari yang sama
-    $cek_duplikat = mysqli_query($conn, "
-        SELECT * FROM warga 
-        WHERE id_user = '$id_user' 
-        AND hari_ronda = '$hari_ronda'
-    ");
+    // Ambil hari_ronda yang sekarang
+    $row = mysqli_fetch_assoc($cek);
+    $hari_sekarang = $row['hari_ronda'];
 
-    if (mysqli_num_rows($cek_duplikat) > 0) {
+    // Cek apakah hari baru SAMA dengan hari yang sudah ada
+    if ($hari_sekarang !== null && $hari_sekarang !== '' && strcasecmp($hari_sekarang, $hari_ronda) == 0) {
         $_SESSION['alert'] = [
             'type' => 'error',
-            'title' => 'Gagal!',
-            'message' => 'Warga sudah terjadwal di hari ' . $hari_ronda . '!'
+            'title' => 'Tidak Bisa Menambahkan!',
+            'message' => 'Anda sudah terdaftar di hari ' . $hari_ronda . '. Tidak bisa menambahkan lagi.'
         ];
-        header("Location: ../app/jadwal_ronda.php");
+        header("Location: ../app/jadwal_ronda.php?id_alamat=" . urlencode($id_alamat));
         exit;
     }
     
@@ -60,7 +58,7 @@ if (isset($_POST['submit'])) {
         $_SESSION['alert'] = [
             'type' => 'success',
             'title' => 'Berhasil!',
-            'message' => 'Jadwal ronda berhasil diperbarui!'
+            'message' => 'Jadwal ronda berhasil ditambahkan!'
         ];
     } else {
         $_SESSION['alert'] = [
@@ -70,6 +68,7 @@ if (isset($_POST['submit'])) {
         ];
     }
 
-    header("Location: ../app/jadwal_ronda.php");
+    header("Location: ../app/jadwal_ronda.php?id_alamat=" . urlencode($id_alamat));
     exit;
-}?>
+}
+?>
