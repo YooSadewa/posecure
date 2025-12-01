@@ -129,10 +129,6 @@ $bulanList = [
             border-color: #198754 !important;
         }
 
-        /* ========================= */
-        /*         PDF MODE          */
-        /* ========================= */
-
         body.pdf-mode {
             background: #ffffff !important;
         }
@@ -298,10 +294,8 @@ $bulanList = [
                                 <tr>
                                     <td><?= $no; ?></td>
 
-                                    <!-- Hilang detik -->
                                     <td><?= date("H:i", strtotime($data["jam"])); ?><br><?= $data["tanggal"]; ?></td>
 
-                                    <!-- Hilang underscore -->
                                     <td><?= str_replace("_", " ", $data["jenis_insiden"]); ?></td>
 
                                     <td><?= nl2br($data["keterangan"]); ?></td>
@@ -382,13 +376,11 @@ $bulanList = [
             let bulan = document.getElementById("filterBulan").value;
             let tahun = document.getElementById("filterTahun").value;
 
-            /* ====== Isi Subjudul PDF ======= */
             document.getElementById("pdfSubtitle").innerHTML =
                 `Periode: ${bulanList[bulan]} ${tahun}<br>
             Kecamatan <?= $kecamatan ?>, Kelurahan <?= $kelurahan ?>,
             RT <?= $rt ?> / RW <?= $rw ?>`;
 
-            /* ===== Tambahkan Logo ke Header ===== */
             let headerDiv = document.getElementById("pdfHeader");
             headerDiv.innerHTML = `
             <div style="text-align:center;">
@@ -408,9 +400,8 @@ $bulanList = [
 
             const element = document.getElementById("laporanPDF");
 
-            /* ===== SETTING PDF BARU ===== */
             const opt = {
-                margin: [15, 15, 15, 15], // margin 20
+                margin: [15, 15, 15, 15],
                 filename: `Laporan-Insiden-${bulanList[bulan]}-${tahun}.pdf`,
                 html2canvas: {
                     scale: 2,
