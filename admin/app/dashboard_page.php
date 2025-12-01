@@ -174,7 +174,8 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
             </a>
             <hr class="my-1 border-secondary opacity-25" />
             <a
-              href="../process/logout.php"
+              href="#"
+              onclick="konfirmasiLogout(event)"
               class="d-flex align-items-center gap-2 px-4 py-2 text-decoration-none text-danger"
               style="transition: background-color 0.2s"
               onmouseover="this.style.backgroundColor='#f8f9fa'"
@@ -449,9 +450,14 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
                           <i class="fas fa-edit"></i> Edit
                         </button>
 
-                        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modal_hapus<?= $row['id_user']; ?>">
+                        <button class="btn btn-danger btn-sm" onclick="konfirmasiHapus('<?= $row['id_user']; ?>')">
                           <i class="fas fa-trash"></i> Hapus
                         </button>
+
+                        <!-- hidden delete form -->
+                        <form id="formHapus" action="../process/delete_petugas.php" method="POST" style="display: none;">
+                          <input type="hidden" name="id_user" id="inputHapusId">
+                        </form>
                       </div>
                     </td>
                   </tr>
@@ -509,45 +515,6 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
                               Close
                             </button>
                             <button type="submit" class="btn btn-primary">Edit Data</button>
-                          </div>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Modal Hapus -->
-                  <div
-                    class="modal fade modal-fullscreen-md-down"
-                    id="modal_hapus<?= $row['id_user']; ?>"
-                    tabindex="-1"
-                    aria-labelledby="modal_hapus_label"
-                    aria-hidden="true">
-                    <div class="modal-dialog">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <h1 class="modal-title fs-5" id="modal_hapus_label">
-                            Hapus Akun Petugas
-                          </h1>
-                          <button
-                            type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                        </div>
-
-                        <form action="../process/delete_petugas.php" method="POST">
-                          <div class="modal-body">
-                            <p>Apakah anda yakin ingin menghapus data Petugas?</p>
-                          </div>
-                          <input type="hidden" name="id_user" value="<?= $row['id_user']; ?>">
-                          <div class="modal-footer">
-                            <button
-                              type="button"
-                              class="btn btn-secondary"
-                              data-bs-dismiss="modal">
-                              Close
-                            </button>
-                            <button type="submit" class="btn btn-primary">Hapus Data</button>
                           </div>
                         </form>
                       </div>
@@ -667,6 +634,7 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
     const profileButton = document.getElementById("profileButton");
     const profileDropdown = document.getElementById("profileDropdown");
@@ -716,12 +684,62 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
     function batalkanUpload(e) {
       e.preventDefault();
       document.getElementById('divUploadFoto').classList.add('d-none'); // Sembunyikan input
-      document.getElementById('triggerEditFoto').classList.remove('d-none'); // Munculkan link lagi
+      document.getElementById('triggerEditFoto').classList.remove('d-none'); // Munculkan link
 
       // Reset nilai input file
       document.querySelector('input[name="foto_admin"]').value = '';
     }
+
+    // Sweet alert
+    <?php if (isset($_SESSION['alert'])): ?>
+      Swal.fire({
+        icon: '<?= $_SESSION['alert']['icon']; ?>',
+        title: '<?= $_SESSION['alert']['title']; ?>',
+        text: <?= isset($_SESSION['alert']['text']) ? "'{$_SESSION['alert']['text']}'" : 'undefined'; ?>,
+        timer: <?= isset($_SESSION['alert']['timer']) ? $_SESSION['alert']['timer'] : 'undefined'; ?>,
+        showConfirmButton: <?= isset($_SESSION['alert']['timer']) ? 'false' : 'true'; ?>
+      });
+      <?php unset($_SESSION['alert']); ?>
+    <?php endif; ?>
+
+    function konfirmasiLogout(event) {
+      event.preventDefault();
+
+      Swal.fire({
+        title: 'Yakin ingin logout?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Logout',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = '../process/logout.php';
+        }
+      });
+    }
+
+    function konfirmasiHapus(idUser) {
+      event.preventDefault();
+
+      Swal.fire({
+        title: 'Hapus data petugas?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          document.getElementById('inputHapusId').value = idUser;
+          document.getElementById('formHapus').submit();
+        }
+      });
+    }
   </script>
+
 </body>
 
 </html>

@@ -58,6 +58,7 @@ $bulanList = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Laporan Insiden</title>
     <link rel="icon" href="../../assets/img/logo.png">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
@@ -87,6 +88,40 @@ $bulanList = [
         table th {
             background-color: #1E3A8A;
             color: white;
+            text-align: center;
+        }
+
+        table th,
+        table td {
+            vertical-align: middle !important;
+            padding: 8px !important;
+            font-size: 14px;
+        }
+
+        table td:nth-child(1) {
+            width: 40px;
+            text-align: center;
+        }
+
+        table td:nth-child(2) {
+            width: 155px;
+        }
+
+        table td:nth-child(3) {
+            width: 140px;
+        }
+
+        table td:nth-child(4) {
+            width: 300px;
+        }
+
+        table td:nth-child(5) {
+            width: 150px;
+        }
+
+        table td:nth-child(6) {
+            width: 120px;
+            text-align: center;
         }
 
         .btn-success {
@@ -105,22 +140,29 @@ $bulanList = [
         }
 
         body.pdf-mode .card-custom {
-            box-shadow: none !important;
             padding: 0 !important;
             border: none !important;
+            box-shadow: none !important;
+        }
+
+        body.pdf-mode #laporanPDF {
+            padding: 20px 25px !important;
+            margin: 10px !important;
+            background: #ffffff !important;
         }
 
         body.pdf-mode table {
             width: 100% !important;
             border-collapse: collapse !important;
             font-size: 11px !important;
+            margin-top: 10px !important;
         }
 
         body.pdf-mode table th,
         body.pdf-mode table td {
             border: 1px solid #000 !important;
-            padding: 6px !important;
-            background: #ffffff !important;
+            padding: 5px !important;
+            background: #fff !important;
             color: #000 !important;
         }
 
@@ -132,6 +174,8 @@ $bulanList = [
 
         body.pdf-mode #pdfHeader {
             display: block !important;
+            margin-top: 10px !important;
+            margin-bottom: 15px !important;
         }
 
         #pdfHeader hr {
@@ -146,18 +190,24 @@ $bulanList = [
         body.pdf-mode .pdf-only-image {
             display: block !important;
             text-align: center;
-            margin-top: 5px;
         }
 
         body.pdf-mode .pdf-only-image img {
-            max-width: 220px !important;
-            border-radius: 6px;
+            width: 200px !important;
+            height: 200px !important;
+            object-fit: cover;
+            border: 1px solid #000;
+            display: block;
+            margin: 5px auto;
         }
 
         body.pdf-mode button[data-bs-toggle="modal"],
         body.pdf-mode .modal {
             display: none !important;
-            visibility: hidden !important;
+        }
+
+        body.pdf-mode .info-normal {
+            display: none !important;
         }
     </style>
 </head>
@@ -165,6 +215,7 @@ $bulanList = [
 <body class="d-flex">
 
     <?php include('sidebar.php'); ?>
+
     <div class="content w-100">
         <?php include 'header.php'; ?>
 
@@ -241,34 +292,33 @@ $bulanList = [
                                 $modalId = "photoModal" . $no;
                             ?>
                                 <tr>
-                                    <td><?= $no++; ?></td>
-                                    <td><?= $data["jam"]; ?>, <?= $data["tanggal"]; ?></td>
-                                    <td><?= $data["jenis_insiden"]; ?></td>
-                                    <td><?= $data["keterangan"]; ?></td>
+                                    <td><?= $no; ?></td>
+
+                                    <td><?= date("H:i", strtotime($data["jam"])); ?><br><?= $data["tanggal"]; ?></td>
+
+                                    <td><?= str_replace("_", " ", $data["jenis_insiden"]); ?></td>
+
+                                    <td><?= nl2br($data["keterangan"]); ?></td>
                                     <td><?= $data["nama"]; ?></td>
 
                                     <td class="text-center">
-                                        <?php
-                                        $modalId = "photoModal" . ($no - 1); // Gunakan $no - 1 karena sudah di-increment
-                                        ?>
 
                                         <?php if (!empty($data["foto"])): ?>
                                             <button class="btn btn-sm text-white"
-                                                style="background-color: #198754;"
+                                                style="background-color:#198754"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#<?= $modalId; ?>">
                                                 Lihat Foto
                                             </button>
 
-                                            <!-- Modal Foto -->
                                             <div class="modal fade" id="<?= $modalId; ?>" tabindex="-1" aria-hidden="true">
                                                 <div class="modal-dialog modal-dialog-centered modal-lg">
                                                     <div class="modal-content">
                                                         <div class="modal-header text-white" style="background:#198754">
                                                             <h5 class="modal-title">Bukti Foto</h5>
-                                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                            <button type="button" class="btn-close btn-close-white"
+                                                                data-bs-dismiss="modal"></button>
                                                         </div>
-
                                                         <div class="modal-body text-center">
                                                             <img src="../../assets/warga_img/insiden_keamanan/<?= $data['foto'] ?>"
                                                                 class="img-fluid rounded">
@@ -276,6 +326,7 @@ $bulanList = [
                                                     </div>
                                                 </div>
                                             </div>
+
                                             <div class="pdf-only-image">
                                                 <img src="../../assets/warga_img/insiden_keamanan/<?= $data['foto'] ?>">
                                             </div>
@@ -283,17 +334,21 @@ $bulanList = [
                                         <?php else: ?>
                                             <span class="text-muted">Tidak ada foto</span>
                                         <?php endif; ?>
+
                                     </td>
                                 </tr>
                             <?php
-                            endwhile; // ← Hapus $no++ yang ada di sini
+                                $no++;
+                            endwhile;
                             ?>
                         </tbody>
                     </table>
-                    <div class="alert alert-info mt-4">
+
+                    <div class="alert alert-info mt-4 info-normal">
                         <i class="fa-solid fa-circle-info me-2"></i>
                         <small>Klik gambar untuk melihat bukti foto lebih jelas.</small>
                     </div>
+
                 </div>
             </div>
 
@@ -321,15 +376,32 @@ $bulanList = [
             let bulan = document.getElementById("filterBulan").value;
             let tahun = document.getElementById("filterTahun").value;
 
-            document.getElementById("pdfSubtitle").innerText =
-                bulanList[bulan] + " " + tahun;
+            document.getElementById("pdfSubtitle").innerHTML =
+                `Periode: ${bulanList[bulan]} ${tahun}<br>
+            Kecamatan <?= $kecamatan ?>, Kelurahan <?= $kelurahan ?>,
+            RT <?= $rt ?> / RW <?= $rw ?>`;
+
+            let headerDiv = document.getElementById("pdfHeader");
+            headerDiv.innerHTML = `
+            <div style="text-align:center;">
+                <img src="../../assets/img/blue_logo.png" 
+                     style="width:200px; margin-bottom:8px;">
+                <h4 class="fw-bold">Laporan Insiden Keamanan</h4>
+                <h6 id="pdfSubtitle" class="text-secondary">
+                    Periode: ${bulanList[bulan]} ${tahun} <br>
+                    Kecamatan <?= $kecamatan ?>, Kelurahan <?= $kelurahan ?>,
+                    RT <?= $rt ?> / RW <?= $rw ?>
+                </h6>
+                <hr>
+            </div>
+        `;
 
             document.body.classList.add("pdf-mode");
 
             const element = document.getElementById("laporanPDF");
 
             const opt = {
-                margin: [0.5, 0.5, 0.5, 0.5],
+                margin: [15, 15, 15, 15],
                 filename: `Laporan-Insiden-${bulanList[bulan]}-${tahun}.pdf`,
                 html2canvas: {
                     scale: 2,
@@ -345,8 +417,10 @@ $bulanList = [
             html2pdf().set(opt).from(element).save().then(() => {
                 document.body.classList.remove("pdf-mode");
             });
+
         });
     </script>
+
 
 </body>
 

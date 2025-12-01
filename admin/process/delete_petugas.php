@@ -17,17 +17,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if ($data) {
     $id_alamat = $data['id_alamat'];
 
-    mysqli_query($conn, "DELETE FROM petugas_keamanan WHERE id_user = '$id_user'");
+    $del_petugas = mysqli_query($conn, "DELETE FROM petugas_keamanan WHERE id_user = '$id_user'");
 
-    mysqli_query($conn, "DELETE FROM user WHERE id_user = '$id_user'");
+    $del_user = mysqli_query($conn, "DELETE FROM user WHERE id_user = '$id_user'");
 
-    mysqli_query($conn, "DELETE FROM alamat WHERE id_alamat = '$id_alamat'");
+    $del_alamat = mysqli_query($conn, "DELETE FROM alamat WHERE id_alamat = '$id_alamat'");
+
+    if ($del_petugas && $del_user && $del_alamat) {
+      $_SESSION['alert'] = [
+        'icon' => 'success',
+        'title' => 'Berhasil!',
+        'text' => 'Data petugas keamanan berhasil dihapus!'
+      ];
+    } else {
+      $_SESSION['alert'] = [
+        'icon' => 'error',
+        'title' => 'Gagal!',
+        'text' => 'Gagal menghapus akun petugas keamanan: ' . mysqli_error($conn)
+      ];
+    }
+  } else {
+    $_SESSION['alert'] = [
+     'icon' => 'error',
+      'title' => 'Gagal!',
+      'text' => 'Data petugas keamanan tidak ditemukan.'
+    ];
   }
-
-  echo "<script>
-        alert('Data akun petugas keamanan berhasil dihapus!');
-        window.location.href = '../app/dashboard_page.php';
-      </script>";
+  header("Location: ../app/dashboard_page.php");
+  exit;
 } else {
   header("Location: ../app/dashboard_page.php");
 }
