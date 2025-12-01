@@ -44,11 +44,13 @@ $nama_bulan = [
   12 => 'Desember'
 ];
 
+$id_alamat = $_SESSION['id_alamat'];
+
 $stmt_warga = $conn->prepare(
   "SELECT DISTINCT u.id_user, u.nama, w.hari_ronda
    FROM user u
    INNER JOIN warga w ON u.id_user = w.id_user
-   WHERE w.hari_ronda IS NOT NULL
+   WHERE w.hari_ronda IS NOT NULL AND w.id_alamat = '$id_alamat'
    ORDER BY u.nama"
 );
 $stmt_warga->execute();
