@@ -17,7 +17,6 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
   exit;
 }
 
-// Validasi bulan dan tahun
 $bulan = isset($_GET['bulan']) ? (int)$_GET['bulan'] : date('n');
 $tahun = isset($_GET['tahun']) ? (int)$_GET['tahun'] : date('Y');
 
@@ -31,67 +30,88 @@ if ($tahun < ($tahun_sekarang - 10) || $tahun > ($tahun_sekarang + 1)) {
 }
 
 $nama_bulan = [
-  1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-  5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-  9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+  1 => 'Januari',
+  2 => 'Februari',
+  3 => 'Maret',
+  4 => 'April',
+  5 => 'Mei',
+  6 => 'Juni',
+  7 => 'Juli',
+  8 => 'Agustus',
+  9 => 'September',
+  10 => 'Oktober',
+  11 => 'November',
+  12 => 'Desember'
 ];
 
-$limit = 10;
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$page = ($page < 1) ? 1 : $page;
-$offset = ($page - 1) * $limit;
-
-$id_alamat = $_SESSION['id_alamat'];
-
-$stmt_jadwal = $conn->prepare(
-  "SELECT 
-      a.tanggal,
-      u.nama,
-      u.id_user,
-      w.hari_ronda
-   FROM absensi a
-   INNER JOIN user u ON a.id_user = u.id_user
-   LEFT JOIN warga w ON u.id_user = w.id_user
-   WHERE MONTH(a.tanggal) = ? 
-   AND YEAR(a.tanggal) = ?
-   ORDER BY a.tanggal ASC, u.nama ASC"
+$stmt_warga = $conn->prepare(
+  "SELECT DISTINCT u.id_user, u.nama, w.hari_ronda
+   FROM user u
+   INNER JOIN warga w ON u.id_user = w.id_user
+   WHERE w.hari_ronda IS NOT NULL
+   ORDER BY u.nama"
 );
-
-$stmt_jadwal->bind_param("ii", $bulan, $tahun);
-
-if (!$stmt_jadwal) {
-  die("Error database: " . htmlspecialchars($conn->error));
-}
-
-$stmt_jadwal->execute();
-$result_jadwal = $stmt_jadwal->get_result();
-
-$jadwal_lengkap = [];
-while ($row = $result_jadwal->fetch_assoc()) {
-  $jadwal_lengkap[] = [
-    'tanggal' => $row['tanggal'],
+$stmt_warga->execute();
+$result_warga = $stmt_warga->get_result();
+$daftar_warga = [];
+while ($row = $result_warga->fetch_assoc()) {
+  $daftar_warga[$row['id_user']] = [
     'nama' => $row['nama'],
-    'id_user' => $row['id_user'],
-    'hari_ronda' => ucfirst($row['hari_ronda']),
-    'hadir' => 'Hadir' // Karena data dari tabel absensi = pasti hadir
+    'hari_ronda' => $row['hari_ronda']
   ];
 }
-$stmt_jadwal->close();
+$stmt_warga->close();
 
-// Hitung statistik
-$total_jadwal = count($jadwal_lengkap);
-$total_hadir = $total_jadwal; // Semua data hadir karena dari tabel absensi
-$total_tidak_hadir = 0;
+$stmt_absensi = $conn->prepare(
+  "SELECT DATE(tanggal) as tanggal, id_user
+   FROM absensi
+   WHERE MONTH(tanggal) = ? AND YEAR(tanggal) = ?"
+);
+$stmt_absensi->bind_param("ii", $bulan, $tahun);
+$stmt_absensi->execute();
+$result_absensi = $stmt_absensi->get_result();
 
-// Pagination
-$total_pages = ($total_jadwal > 0) ? ceil($total_jadwal / $limit) : 1;
-
-if ($page > $total_pages) {
-  $page = $total_pages;
-  $offset = ($page - 1) * $limit;
+$data_hadir = [];
+while ($row = $result_absensi->fetch_assoc()) {
+  $data_hadir[$row['tanggal']][] = $row['id_user'];
 }
+$stmt_absensi->close();
 
-$jadwal_paged = array_slice($jadwal_lengkap, $offset, $limit);
+$jumlah_hari = cal_days_in_month(CAL_GREGORIAN, $bulan, $tahun);
+$tanggal_pertama = mktime(0, 0, 0, $bulan, 1, $tahun);
+$hari_pertama = date('w', $tanggal_pertama); 
+
+$hari_map = [
+  'Sunday' => 'Minggu',
+  'Monday' => 'Senin',
+  'Tuesday' => 'Selasa',
+  'Wednesday' => 'Rabu',
+  'Thursday' => 'Kamis',
+  'Friday' => 'Jumat',
+  'Saturday' => 'Sabtu'
+];
+
+$total_hadir = 0;
+$total_tidak_hadir = 0;
+$total_jadwal = 0;
+
+for ($hari = 1; $hari <= $jumlah_hari; $hari++) {
+  $tanggal_str = sprintf("%04d-%02d-%02d", $tahun, $bulan, $hari);
+  $timestamp = strtotime($tanggal_str);
+  $nama_hari_eng = date('l', $timestamp);
+  $nama_hari = $hari_map[$nama_hari_eng];
+
+  foreach ($daftar_warga as $id => $data) {
+    if (strtolower($data['hari_ronda']) === strtolower($nama_hari)) {
+      $total_jadwal++;
+      if (isset($data_hadir[$tanggal_str]) && in_array($id, $data_hadir[$tanggal_str])) {
+        $total_hadir++;
+      } else {
+        $total_tidak_hadir++;
+      }
+    }
+  }
+}
 ?>
 
 <!DOCTYPE html>
@@ -100,11 +120,10 @@ $jadwal_paged = array_slice($jadwal_lengkap, $offset, $limit);
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Riwayat Absensi Warga</title>
+  <title>Kalender Absensi Ronda</title>
   <link rel="icon" href="../../assets/img/logo.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
@@ -121,73 +140,29 @@ $jadwal_paged = array_slice($jadwal_lengkap, $offset, $limit);
       min-height: 100vh;
     }
 
-    .card-custom {
-      background: white;
-      border-radius: 10px;
-      padding: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0;
     }
 
-    .badge-hadir {
-      background-color: #22c55e;
-      color: white;
-      padding: 0.25rem 0.75rem;
-      border-radius: 0.375rem;
-      font-size: 0.875rem;
+    .calendar-day {
+      min-height: 120px;
+      border: 1px solid #dee2e6;
+      border-top: none;
+      border-left: none;
     }
 
-    .badge-tidak-hadir {
-      background-color: #ef4444;
-      color: white;
-      padding: 0.25rem 0.75rem;
-      border-radius: 0.375rem;
-      font-size: 0.875rem;
+    .calendar-day:nth-child(7n+1) {
+      border-left: 1px solid #dee2e6;
     }
 
-    .badge-hari {
-      background-color: #3b82f6;
-      color: white;
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.25rem;
-      font-size: 0.75rem;
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
     }
 
-    #tableContainer {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 600px;
-      margin-bottom: 0;
-    }
-    
-
-    /* Alert info style seperti gambar */
-    .alert-info-custom {
-      background-color: #D1ECF1;
-      border: 1px solid #BEE5EB;
-      border-radius: 0.375rem;
-      padding: 1rem;
-      color: #0C5460;
-    }
-
-    /* Empty state */
-    .empty-state {
-      text-align: center;
-      padding: 3rem 1rem;
-      color: #6B7280;
-    }
-
-    .empty-state i {
-      font-size: 4rem;
-      color: #9CA3AF;
-      margin-bottom: 1rem;
-    }
-
-    /* CSS untuk PDF */
     body.pdf-mode .no-print {
       display: none !important;
     }
@@ -195,6 +170,11 @@ $jadwal_paged = array_slice($jadwal_lengkap, $offset, $limit);
     @media (max-width: 768px) {
       .content {
         margin-left: 0;
+        padding: 1rem;
+      }
+
+      .calendar-day {
+        min-height: 80px;
       }
     }
   </style>
@@ -206,14 +186,13 @@ $jadwal_paged = array_slice($jadwal_lengkap, $offset, $limit);
   <div class="content w-100">
     <?php include 'header.php' ?>
 
-    <div class="card-custom">
-      <!-- Header dengan Judul dan Tombol -->
+    <div class="bg-white rounded-3 p-4 shadow-sm">
       <div class="d-flex flex-column flex-md-row gap-2 justify-content-between align-items-md-center mb-4">
-        <h3 class="fw-bold fs-5 mb-0">Riwayat Absensi Warga</h3>
+        <h3 class="fw-bold fs-5 mb-0">
+          Kalender Absensi Ronda
+        </h3>
         <div class="d-flex gap-2 flex-wrap align-items-center no-print">
-          <!-- Filter Bulan & Tahun -->
           <form method="GET" action="" class="d-flex gap-2 align-items-center">
-            <input type="hidden" name="page" value="1">
             <select name="bulan" class="form-select" style="width: auto;" onchange="this.form.submit()">
               <?php foreach ($nama_bulan as $key => $value): ?>
                 <option value="<?= $key ?>" <?= ($bulan == $key) ? 'selected' : '' ?>>
@@ -230,160 +209,137 @@ $jadwal_paged = array_slice($jadwal_lengkap, $offset, $limit);
             </select>
           </form>
 
-          <!-- Tombol -->
-          <a href="jadwal_ronda.php" class="btn btn-success">Lihat Jadwal Ronda</a>
-          <button id="downloadPDF" class="btn btn-success d-flex align-items-center gap-2">
+          <a href="jadwal_ronda.php" class="btn btn-success">
+            <i class="bi bi-calendar-check"></i> Lihat Jadwal
+          </a>
+          <button id="downloadPDF" class="btn btn-success px-3 fw-semibold">
             <i class="fa-solid fa-file-pdf"></i> Download PDF
           </button>
         </div>
       </div>
 
-      <!-- Alert Info -->
-      <div class="alert-info-custom mb-4">
-        Menampilkan data <strong><?= htmlspecialchars($nama_bulan[$bulan]) ?> <?= htmlspecialchars($tahun) ?></strong> - Total: <strong><?= $total_jadwal ?></strong> record
-        <br>
-        <small>
-          <i class="bi bi-info-circle"></i> Hanya menampilkan warga yang terjadwal ronda di bulan ini
-        </small>
-      </div>
-
-      <!-- Tabel -->
-      <div id="tableContainer" class="table-responsive">  
-        <div id="laporanPDF">
-          
-          <!-- Header untuk PDF (hidden di web) -->
-          <div class="text-center mb-3" style="display: none;" id="pdfHeader">
-            <h4 class="fw-bold">RIWAYAT ABSENSI WARGA</h4>
-            <h6>Periode: <?= htmlspecialchars($nama_bulan[$bulan]) ?> <?= htmlspecialchars($tahun) ?></h6>
-            <hr>
-          </div>
-
-          <table class="table table-bordered align-middle table-striped table-hover align-midle">
-            <thead class="table-light">
-              <tr>
-                <th>Tanggal</th>
-                <th>Nama</th>
-                <th>Keterangan</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php if (count($jadwal_paged) > 0): ?>
-                <?php
-                $hari_map_indo = [
-                  'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu',
-                  'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu', 'Sunday' => 'Minggu'
-                ];
-                
-                foreach ($jadwal_paged as $data):
-                  $hari_eng = date('l', strtotime($data['tanggal']));
-                  $hari_indonesia = $hari_map_indo[$hari_eng];
-                  $tanggal_indonesia = date('d-m-Y', strtotime($data['tanggal']));
-                ?>
-                  <tr>
-                    <td><?= htmlspecialchars($tanggal_indonesia) ?></td>
-                    <td><?= htmlspecialchars($data['nama']) ?></td>
-                    <td>
-                      <?php if ($data['hadir'] == 'Hadir'): ?>
-                        <span class="badge-hadir">Hadir</span>
-                      <?php else: ?>
-                        <span class="badge-tidak-hadir">Tidak Hadir</span>
-                      <?php endif; ?>
-                    </td>
-                  </tr>
-                <?php endforeach; ?>
-              <?php else: ?>
-                <tr>
-                  <td colspan="3">
-                    <div class="empty-state">
-                      <i class="fa-solid fa-inbox"></i>
-                      <p class="mb-0">Tidak ada jadwal ronda untuk bulan ini</p>
-                    </div>
-                  </td>
-                </tr>
-              <?php endif; ?>
-            </tbody>
-          </table>
-
-          <!-- Footer untuk PDF (hidden di web) -->
-          <div class="text-end mt-3" style="display: none;" id="pdfFooter">
-            <small>Dicetak pada: <?= date('d-m-Y H:i:s') ?></small>
-          </div>
-
+      <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+        <i class="bi bi-info-circle me-2"></i>
+        <div>
+          Menampilkan data <strong><?= htmlspecialchars($nama_bulan[$bulan]) ?> <?= htmlspecialchars($tahun) ?></strong>
+          <br>
+          <small>Warna hijau = Hadir, Warna merah = Tidak Hadir</small>
         </div>
       </div>
 
-      <div class="d-flex justify-content-end mt-3 pe-3">
-  <nav>
-    <ul class="pagination mb-0">
+      <div id="laporanPDF">
+        <div class="text-center mb-3 d-none" id="pdfHeader">
+          <h4 class="fw-bold">KALENDER ABSENSI RONDA</h4>
+          <h6>Periode: <?= htmlspecialchars($nama_bulan[$bulan]) ?> <?= htmlspecialchars($tahun) ?></h6>
+          <hr>
+        </div>
 
-      <!-- Tombol Previous -->
-      <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
-        <a class="page-link" 
-           href="?bulan=<?= $bulan ?>&tahun=<?= $tahun ?>&page=<?= $page - 1 ?>">
-          Previous
-        </a>
-      </li>
+        <div class="bg-white rounded-3 overflow-hidden border">
+          <div class="row g-0 bg-dark text-white text-center fw-semibold">
+            <div class="col border-end border-secondary p-3">Minggu</div>
+            <div class="col border-end border-secondary p-3">Senin</div>
+            <div class="col border-end border-secondary p-3">Selasa</div>
+            <div class="col border-end border-secondary p-3">Rabu</div>
+            <div class="col border-end border-secondary p-3">Kamis</div>
+            <div class="col border-end border-secondary p-3">Jumat</div>
+            <div class="col p-3">Sabtu</div>
+          </div>
 
-      <!-- Nomor Halaman -->
-      <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-        <li class="page-item <?= ($page == $i) ? 'active' : '' ?>">
-          <a class="page-link" 
-             href="?bulan=<?= $bulan ?>&tahun=<?= $tahun ?>&page=<?= $i ?>">
-            <?= $i ?>
-          </a>
-        </li>
-      <?php endfor; ?>
+          <div class="calendar-grid">
+            <?php
+            for ($i = 0; $i < $hari_pertama; $i++) {
+              echo '<div class="calendar-day bg-light"></div>';
+            }
 
-      <!-- Tombol Next -->
-      <li class="page-item <?= ($page >= $total_pages) ? 'disabled' : '' ?>">
-        <a class="page-link" 
-           href="?bulan=<?= $bulan ?>&tahun=<?= $tahun ?>&page=<?= $page + 1 ?>">
-          Next
-        </a>
-      </li>
+            $today = date('Y-m-d');
 
-    </ul>
-  </nav>
-</div>
+            for ($hari = 1; $hari <= $jumlah_hari; $hari++) {
+              $tanggal_str = sprintf("%04d-%02d-%02d", $tahun, $bulan, $hari);
+              $timestamp = strtotime($tanggal_str);
+              $nama_hari_eng = date('l', $timestamp);
+              $nama_hari = $hari_map[$nama_hari_eng];
 
+              $is_today = ($tanggal_str === $today) ? 'bg-warning bg-opacity-10' : 'bg-white';
+
+              echo '<div class="calendar-day p-2 ' . $is_today . '">';
+              echo '<div class="fw-bold small text-secondary mb-2">' . $hari . '</div>';
+              echo '<div class="text-muted" style="font-size: 0.7rem; margin-bottom: 0.5rem;">' . $nama_hari . '</div>';
+
+              $ada_jadwal = false;
+              foreach ($daftar_warga as $id => $data) {
+                if (strtolower($data['hari_ronda']) === strtolower($nama_hari)) {
+                  $ada_jadwal = true;
+                  $hadir = isset($data_hadir[$tanggal_str]) && in_array($id, $data_hadir[$tanggal_str]);
+
+                  if ($hadir) {
+                    echo '<div class="bg-success bg-opacity-25 border-start border-success border-3 px-2 py-1 mb-1 rounded d-flex align-items-center gap-1" style="font-size: 0.7rem;">';
+                    echo '<i class="bi bi-check-circle-fill text-success" style="font-size: 0.6rem;"></i>';
+                  } else {
+                    echo '<div class="bg-danger bg-opacity-25 border-start border-danger border-3 px-2 py-1 mb-1 rounded d-flex align-items-center gap-1" style="font-size: 0.7rem;">';
+                    echo '<i class="bi bi-x-circle-fill text-danger" style="font-size: 0.6rem;"></i>';
+                  }
+
+                  echo '<span>' . htmlspecialchars($data['nama']) . '</span>';
+                  echo '</div>';
+                }
+              }
+
+              if (!$ada_jadwal) {
+                echo '<div class="text-muted text-center" style="font-size: 0.65rem;">Tidak ada jadwal</div>';
+              }
+
+              echo '</div>';
+            }
+            ?>
+          </div>
+        </div>
+
+        <div class="text-end mt-3 d-none" id="pdfFooter">
+          <small>Dicetak pada: <?= date('d-m-Y H:i:s') ?></small>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  
-  <!-- Script Download PDF -->
+
   <script>
     document.getElementById("downloadPDF")?.addEventListener("click", () => {
       const element = document.getElementById("laporanPDF");
       const bulan = "<?= htmlspecialchars($nama_bulan[$bulan]) ?>";
       const tahun = "<?= htmlspecialchars($tahun) ?>";
-      
-      document.getElementById("pdfHeader").style.display = "block";
-      document.getElementById("pdfFooter").style.display = "block";
+
+      document.getElementById("pdfHeader").classList.remove("d-none");
+      document.getElementById("pdfFooter").classList.remove("d-none");
       document.body.classList.add("pdf-mode");
 
       const opt = {
-        margin: [10, 10, 15, 10],  // tambah jarak supaya tidak kepotong
-        filename: `riwayat-absensi-${bulan}-${tahun}.pdf`,
-        image: { type: 'jpeg', quality: 1 },
-        html2canvas: { 
-          scale: 4,              // dinaikkan supaya border tidak pecah
-          useCORS: true,
+        margin: [10, 10, 15, 10],
+        filename: `kalender-absensi-${bulan}-${tahun}.pdf`,
+        image: {
+          type: 'jpeg',
+          quality: 0.98
         },
-        jsPDF: { 
+        html2canvas: {
+          scale: 3,
+          useCORS: true,
+          letterRendering: true,
+        },
+        jsPDF: {
           unit: 'mm',
           format: 'a4',
-          orientation: 'portrait'
+          orientation: 'landscape'
         }
       };
 
       html2pdf().set(opt).from(element).save().then(() => {
         document.body.classList.remove("pdf-mode");
-        document.getElementById("pdfHeader").style.display = "none";
-        document.getElementById("pdfFooter").style.display = "none";
+        document.getElementById("pdfHeader").classList.add("d-none");
+        document.getElementById("pdfFooter").classList.add("d-none");
       });
     });
   </script>
 
-  <!-- Script Profile Dropdown -->
   <script>
     const profileButton = document.getElementById("profileButton");
     const profileDropdown = document.getElementById("profileDropdown");

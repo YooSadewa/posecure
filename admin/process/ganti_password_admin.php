@@ -22,26 +22,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $update_password = mysqli_query($conn, "UPDATE user SET password = '$password_hash' WHERE id_user = '$id_user'");
 
       if (!$update_password) {
-        echo "<script>
-        alert('Password gagal diperbarui.');
-        window.location.href = '../app/dashboard_page.php';
-        </script>";
+        $_SESSION['alert'] = [
+          'icon' => 'error',
+          'title' => 'Gagal!',
+          'text' => 'Password gagal diperbarui.'
+        ];
+        header("Location: ../app/dashboard_page.php");
+        exit;
       } else {
-        echo "<script>
-        alert('Password berhasil diperbarui.');
-        window.location.href = '../app/dashboard_page.php';
-        </script>";
+        $_SESSION['alert'] = [
+          'icon' => 'success',
+          'title' => 'Berhasil!',
+          'text' => 'Password berhasil diperbarui.'
+        ];
+        header("Location: ../app/dashboard_page.php");
+        exit;
       }
     } else {
-      echo "<script>
-        alert('Konfirmasi password baru tidak cocok.');
-        window.location.href = '../app/dashboard_page.php';
-        </script>";
+      $_SESSION['alert'] = [
+        'icon' => 'error',
+        'title' => 'Gagal!',
+        'text' => 'Konfirmasi password baru tidak cocok.'
+      ];
+      header("Location: ../app/dashboard_page.php");
+      exit;
     }
   } else {
-    echo "<script>
-        alert('Password lama salah, silahkan coba lagi.');
-        window.location.href = '../app/dashboard_page.php';
-        </script>";
+    $_SESSION['alert'] = [
+      'icon' => 'error',
+      'title' => 'Gagal!',
+      'text' => 'Password lama salah, silahkan coba lagi.'
+    ];
+    header("Location: ../app/dashboard_page.php");
+    exit;
   }
 }

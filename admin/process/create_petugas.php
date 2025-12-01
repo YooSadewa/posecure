@@ -29,7 +29,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $insert_alamat = "INSERT INTO alamat (id_alamat, kecamatan, kelurahan, no_rt, no_rw) VALUES ('$id_alamat', '$kecamatan', '$kelurahan', '$rt', '$rw')";
 
   if (!mysqli_query($conn, $insert_alamat)) {
-    die("Gagal Insert Alamat: " . mysqli_error($conn));
+    $_SESSION['alert'] = [
+      'icon' => 'error',
+      'title' => 'Gagal!',
+      'text' => 'Gagal menambahkan data alamat petugas keamanan: ' . mysqli_error($conn)
+    ];
+    header("Location: ../app/dashboard_page.php");
+    exit;
   }
 
   // user ==============================
@@ -45,19 +51,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $insert_user = "INSERT INTO user (id_user, nama, username, password, role, foto, no_telp) VALUES ('$id_user', '$name', '$username', '$password_hash', 'petugas_keamanan', '', '-')";
 
   if (!mysqli_query($conn, $insert_user)) {
-    die("Gagal Insert User: " . mysqli_error($conn));
+    $_SESSION['alert'] = [
+      'icon' => 'error',
+      'title' => 'Gagal!',
+      'text' => 'Gagal menambahkan data petugas keamanan: ' . mysqli_error($conn)
+    ];
+    header("Location: ../app/dashboard_page.php");
+    exit;
   }
 
   // petugas_keamanan ==============================
   $insert_petugas = "INSERT INTO petugas_keamanan (id_user,status_keaktifan, id_alamat) VALUES ('$id_user', 'aktif', '$id_alamat')";
   if (!mysqli_query($conn, $insert_petugas)) {
-    die("Gagal Insert Detail Petugas: " . mysqli_error($conn));
+    $_SESSION['alert'] = [
+      'icon' => 'error',
+      'title' => 'Gagal!',
+      'text' => 'Gagal menambahkan detail petugas keamanan: ' . mysqli_error($conn)
+    ];
+    header("Location: ../app/dashboard_page.php");
+    exit;
   }
 
-  echo "
-<script>
-    alert('Data petugas keamanan berhasil disimpan.');
-    window.location.href = '../app/dashboard_page.php';
-</script>
-";
+  $_SESSION['alert'] = [
+    'icon' => 'success',
+    'title' => 'Berhasil!',
+    'text' => 'Data petugas keamanan berhasil ditambahkan!'
+  ];
+
+  header("Location: ../app/dashboard_page.php");
+  exit;
 }

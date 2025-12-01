@@ -128,7 +128,7 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
                 WHERE warga.hari_ronda='$h'
                 LIMIT $limit OFFSET $start
               ");
-              
+
               $isi = [];
               while ($row = mysqli_fetch_assoc($query)) {
                 $isi[] = $row['nama'];
@@ -156,12 +156,12 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
           </tbody>
         </table>
       </div>
-      
+
       <div class="d-flex justify-content-end mt-3 pe-3">
         <nav>
           <ul class="pagination mb-0">
 
-            <!-- Tombol Previous -->
+            <!-- Pagination -->
             <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
               <a class="page-link" href="?page=<?= max(1, $page - 1) ?>">Previous</a>
             </li>
@@ -200,7 +200,7 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
   // buat map nama(lowercase) => id_user untuk JS
   $warga_map = [];
   foreach ($warga_list as $w) {
-    $warga_map[mb_strtolower($w['nama'])] = $w['id_user']; 
+    $warga_map[mb_strtolower($w['nama'])] = $w['id_user'];
   }
   ?>
 
@@ -215,7 +215,7 @@ $totalPage = ($totalData > 0) ? ceil($totalData / $limit) : 1;
           </div>
 
           <div class="modal-body">
-            <!-- Input Nama dengan Search -->
+            
             <div class="input-group mb-3">
               <label for="nama_warga" class="input-group-text" style="width: 120px;">Nama <span class="text-danger">*</span></label>
 

@@ -1,4 +1,5 @@
 <?php
+session_start();
 $pesan_username = "";
 $pesan_password = "";
 $value_username = "";
@@ -141,6 +142,22 @@ if (isset($_GET['pesan'])) {
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- sweet alert -->
+  <?php if (isset($_SESSION['alert'])): ?>
+    <script>
+      Swal.fire({
+        icon: '<?= $_SESSION['alert']['icon']; ?>',
+        title: '<?= $_SESSION['alert']['title']; ?>',
+        text: <?= isset($_SESSION['alert']['text']) ? "'{$_SESSION['alert']['text']}'" : 'undefined'; ?>,
+        timer: <?= isset($_SESSION['alert']['timer']) ? $_SESSION['alert']['timer'] : 'undefined'; ?>,
+        showConfirmButton: <?= isset($_SESSION['alert']['timer']) ? 'false' : 'true'; ?>
+      });
+    </script>
+    <?php unset($_SESSION['alert']); ?>
+  <?php endif; ?>
+
 </body>
 
 </html>
