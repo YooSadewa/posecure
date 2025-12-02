@@ -17,17 +17,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if ($data) {
     $id_alamat = $data['id_alamat'];
 
+    $get_warga = mysqli_query($conn, "SELECT id_user FROM warga WHERE id_alamat = '$id_alamat'");
+    $warga_ids = [];
+    while ($warga = mysqli_fetch_assoc($get_warga)) {
+      $warga_ids[] = $warga['id_user'];
+    }
+
     $del_petugas = mysqli_query($conn, "DELETE FROM petugas_keamanan WHERE id_user = '$id_user'");
 
-    $del_user = mysqli_query($conn, "DELETE FROM user WHERE id_user = '$id_user'");
+    $del_warga = mysqli_query($conn, "DELETE FROM warga WHERE id_alamat = '$id_alamat'");
 
     $del_alamat = mysqli_query($conn, "DELETE FROM alamat WHERE id_alamat = '$id_alamat'");
 
-    if ($del_petugas && $del_user && $del_alamat) {
+    $del_user_petugas = mysqli_query($conn, "DELETE FROM user WHERE id_user = '$id_user'");
+
+    $del_user_warga = true;
+    foreach ($warga_ids as $warga_id) {
+      $result = mysqli_query($conn, "DELETE FROM user WHERE id_user = '$warga_id'");
+      if (!$result) {
+        $del_user_warga = false;
+      }
+    }
+
+    if ($del_petugas && $del_warga && $del_alamat && $del_user_petugas && $del_user_warga) {
+      $jumlah_warga = count($warga_ids);
       $_SESSION['alert'] = [
         'icon' => 'success',
         'title' => 'Berhasil!',
-        'text' => 'Data petugas keamanan berhasil dihapus!'
+        'text' => "Data petugas keamanan dan $jumlah_warga warga berhasil dihapus!"
       ];
     } else {
       $_SESSION['alert'] = [
@@ -38,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   } else {
     $_SESSION['alert'] = [
-     'icon' => 'error',
+      'icon' => 'error',
       'title' => 'Gagal!',
       'text' => 'Data petugas keamanan tidak ditemukan.'
     ];
