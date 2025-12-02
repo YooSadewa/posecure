@@ -46,7 +46,7 @@ $total_data = mysqli_fetch_assoc(mysqli_query($conn, $query_count_data))['total'
 $jumlah_halaman = ceil($total_data / $jumlah_per_halaman);
 
 // tabel
-$query_table = "SELECT u.id_user, u.username, a.kecamatan, a.kelurahan, a.no_rt, a.no_rw FROM user u JOIN petugas_keamanan p ON u.id_user = p.id_user JOIN alamat a ON p.id_alamat = a.id_alamat WHERE u.role = 'petugas_keamanan' $search_query ORDER BY u.username ASC LIMIT $awal_data, $jumlah_per_halaman";
+$query_table = "SELECT u.id_user, u.username, u.nama, a.kecamatan, a.kelurahan, a.no_rt, a.no_rw FROM user u JOIN petugas_keamanan p ON u.id_user = p.id_user JOIN alamat a ON p.id_alamat = a.id_alamat WHERE u.role = 'petugas_keamanan' $search_query ORDER BY u.username ASC LIMIT $awal_data, $jumlah_per_halaman";
 $result_table = mysqli_query($conn, $query_table);
 
 // profile admin
@@ -491,6 +491,10 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
                               <input type="text" name="username" class="form-control" value="<?= $row['username']; ?>" aria-label="username" required />
                             </div>
                             <div class="input-group mb-3">
+                              <span class="input-group-text label-width" id="nama">Nama<span class="text-danger ms-1">*</span></span>
+                              <input type="text" name="nama" class="form-control" value="<?= $row['nama']; ?>" aria-label="nama" required />
+                            </div>
+                            <div class="input-group mb-3">
                               <span class="input-group-text label-width" id="kecamatan">Kecamatan <span class="text-danger ms-1">*</span></span>
                               <input type="text" name="kecamatan" class="form-control" value="<?= $row['kecamatan']; ?>" aria-label="kecamatan" required />
                             </div>
@@ -602,6 +606,10 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
             <div class="input-group mb-3">
               <span class="input-group-text label-width" id="username">Username <span class="text-danger ms-1">*</span></span>
               <input type="text" class="form-control" id="username" name="username" aria-label="username" required />
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text label-width" id="nama">Nama<span class="text-danger ms-1">*</span></span>
+              <input type="text" class="form-control" id="nama" name="nama" aria-label="nama" required />
             </div>
             <div class="input-group mb-3">
               <span class="input-group-text label-width" id="kecamatan">Kecamatan <span class="text-danger ms-1">*</span></span>

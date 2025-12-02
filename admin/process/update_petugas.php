@@ -8,44 +8,74 @@ if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'admin') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $id_user = mysqli_real_escape_string($conn, $_POST['id_user']);
-  $username = mysqli_real_escape_string($conn, $_POST['username']);
+  $id_user   = mysqli_real_escape_string($conn, $_POST['id_user']);
+  $username  = mysqli_real_escape_string($conn, $_POST['username']);
+  $nama      = mysqli_real_escape_string($conn, $_POST['nama']);
   $kecamatan = mysqli_real_escape_string($conn, $_POST['kecamatan']);
   $kelurahan = mysqli_real_escape_string($conn, $_POST['kelurahan']);
-  $rt = mysqli_real_escape_string($conn, $_POST['rt']);
-  $rw = mysqli_real_escape_string($conn, $_POST['rw']);
+  $rt        = mysqli_real_escape_string($conn, $_POST['rt']);
+  $rw        = mysqli_real_escape_string($conn, $_POST['rw']);
 
-  $update_user = mysqli_query($conn, "UPDATE user SET username = '$username' WHERE id_user = '$id_user'");
+  $update_user = mysqli_query($conn, "UPDATE user SET nama = '$nama', username = '$username' WHERE id_user = '$id_user'");
 
   if (!$update_user) {
     $_SESSION['alert'] = [
       'icon' => 'error',
       'title' => 'Gagal!',
-      'text' => 'Gagal mengupdate data petugas keamanan: ' . mysqli_error($conn)
+      'text' => 'Gagal mengupdate data petugas: ' . mysqli_error($conn)
     ];
     header("Location: ../app/dashboard_page.php");
     exit;
   }
 
+  // alamat ==========================================
   $data_alamat = mysqli_fetch_assoc(mysqli_query($conn, "SELECT id_alamat FROM petugas_keamanan WHERE id_user = '$id_user'"));
 
   if ($data_alamat) {
-    $id_alamat = $data_alamat['id_alamat'];
+    $id_alamat_lama = $data_alamat['id_alamat'];
+    $id_alamat_baru = "";
 
-    $query_alamat = "UPDATE alamat SET kecamatan = '$kecamatan', kelurahan = '$kelurahan', no_rt = '$rt', no_rw = '$rw' WHERE id_alamat = '$id_alamat'";
+    $cek_exist = mysqli_query($conn, "SELECT id_alamat FROM alamat WHERE kecamatan = '$kecamatan' AND kelurahan = '$kelurahan' AND no_rt = '$rt' AND no_rw = '$rw'");
 
-    $update_alamat = mysqli_query($conn, $query_alamat);
+    if (mysqli_num_rows($cek_exist) > 0) {
+      $d_exist = mysqli_fetch_assoc($cek_exist);
+      $id_alamat_baru = $d_exist['id_alamat'];
+    } else {
+      $q_last = mysqli_query($conn, "SELECT id_alamat FROM alamat WHERE id_alamat LIKE 'A-%' ORDER BY CAST(SUBSTRING(id_alamat, 3) AS UNSIGNED) DESC LIMIT 1");
+      $d_last = mysqli_fetch_assoc($q_last);
+      $angka  = $d_last ? (int)substr($d_last['id_alamat'], 2) : 0;
 
-    if (!$update_alamat) {
-      $_SESSION['alert'] = [
-        'icon' => 'error',
-        'title' => 'Gagal!',
-        'text' => 'Gagal mengupdate data alamat petugas keamanan: ' . mysqli_error($conn)
-      ];
+      $id_alamat_baru = 'A-' . str_pad($angka + 1, 2, '0', STR_PAD_LEFT);
+
+      $ins_alamat = mysqli_query($conn, "INSERT INTO alamat (id_alamat, kecamatan, kelurahan, no_rt, no_rw) VALUES ('$id_alamat_baru', '$kecamatan', '$kelurahan', '$rt', '$rw')");
+
+      if (!$ins_alamat) {
+        $_SESSION['alert'] = ['icon' => 'error', 'title' => 'Gagal', 'text' => 'Gagal buat alamat baru'];
+        header("Location: ../app/dashboard_page.php");
+        exit;
+      }
+    }
+
+    $pindah_alamat = mysqli_query($conn, "UPDATE petugas_keamanan SET id_alamat = '$id_alamat_baru' WHERE id_user = '$id_user'");
+
+    if (!$pindah_alamat) {
+      $_SESSION['alert'] = ['icon' => 'error', 'title' => 'Gagal', 'text' => 'Gagal update relasi alamat'];
       header("Location: ../app/dashboard_page.php");
       exit;
     }
+
+    if ($id_alamat_lama !== $id_alamat_baru) {
+      $cek_sisa_p = mysqli_fetch_assoc(mysqli_query($conn, "SELECT count(*) as total FROM petugas_keamanan WHERE id_alamat = '$id_alamat_lama'"));
+      $cek_sisa_w = mysqli_fetch_assoc(mysqli_query($conn, "SELECT count(*) as total FROM warga WHERE id_alamat = '$id_alamat_lama'"));
+
+      $total_penghuni = $cek_sisa_p['total'] + $cek_sisa_w['total'];
+
+      if ($total_penghuni == 0) {
+        mysqli_query($conn, "DELETE FROM alamat WHERE id_alamat = '$id_alamat_lama'");
+      }
+    }
   }
+
   $_SESSION['alert'] = [
     'icon' => 'success',
     'title' => 'Berhasil!',
