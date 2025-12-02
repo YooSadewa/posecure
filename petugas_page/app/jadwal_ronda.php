@@ -12,24 +12,19 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
   exit;
 }
 
-// Pagination config
+$id_alamat = $_SESSION['id_alamat'];
+
 $limit = 9;
 
-// Halaman aktif
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $start = ($page - 1) * $limit;
 
-// Ambil id_alamat
-$id_alamat = isset($_GET['id_alamat']) ? $_GET['id_alamat'] : 'A-01';
-$id_alamat_esc = mysqli_real_escape_string($conn, $id_alamat);
-
-// Hitung total data hanya untuk alamat tersebut
 $countQuery = mysqli_query($conn, "
     SELECT COUNT(DISTINCT id_user) AS total 
     FROM warga 
     WHERE hari_ronda IS NOT NULL 
     AND hari_ronda != '' 
-    AND id_alamat = '$id_alamat_esc'
+    AND id_alamat = '$id_alamat'
 ");
 $countData = mysqli_fetch_assoc($countQuery);
 $totalData = $countData['total'];
@@ -42,7 +37,7 @@ $query_warga = "
   FROM user
   JOIN warga ON user.id_user = warga.id_user
   WHERE user.role = 'warga'
-  AND warga.id_alamat = '$id_alamat_esc'
+  AND warga.id_alamat = '$id_alamat'
   ORDER BY user.nama ASC
 ";
 $result_warga = mysqli_query($conn, $query_warga);
@@ -156,7 +151,7 @@ if ($result_warga && mysqli_num_rows($result_warga) > 0) {
               FROM warga
               JOIN user ON warga.id_user = user.id_user
               WHERE warga.hari_ronda = '$h_esc'
-                AND warga.id_alamat = '$id_alamat_esc'
+                AND warga.id_alamat = '$id_alamat'
               ORDER BY user.nama ASC
               LIMIT $limit OFFSET $start
             ";

@@ -43,11 +43,6 @@ WHERE user.id_user = '$id_user'
 
 $result = mysqli_query($conn, $query);
 $data = mysqli_fetch_assoc($result);
-
-// PATH FOTO PROFIL
-$foto_profil = $data['foto']
-  ? "../../assets/petugas_img/profile_img/" . $data['foto']
-  : "../../assets/img/default_user.png";
 ?>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
@@ -65,15 +60,17 @@ $foto_profil = $data['foto']
   <div class="col-md-6 text-md-end">
     <div class="position-relative d-inline-block">
 
-      <!-- BUTTON PROFIL DROPDOWN -->
       <button id="profileButton" class="btn btn-light d-flex align-items-center gap-3 px-4 py-2 rounded-3 shadow-sm fw-semibold">
-        <img src="<?= $foto_profil ?>" class="rounded-circle object-fit-cover border border-secondary"
-          style="width:28px;height:28px;">
+        <?php if ($data['foto']) { ?>
+          <img src="../../assets/petugas_img/profile_img/<?= $data['foto'] ?>" class="rounded-circle object-fit-cover border border-secondary"
+            style="width:28px;height:28px;">
+        <?php } else { ?>
+          <i id="defaultIcon" class="fas fa-user text-secondary"></i>
+        <?php } ?>
         <span class="text-dark"><?= $data['nama'] ?></span>
         <i id="caretIcon" class="fa-solid fa-caret-down text-secondary ms-auto"></i>
       </button>
 
-      <!-- DROPDOWN -->
       <div id="profileDropdown"
         class="position-absolute w-100 mt-2 bg-white rounded-3 shadow border border-light py-2 d-none"
         style="min-width:12rem; z-index:999;">
@@ -94,7 +91,6 @@ $foto_profil = $data['foto']
   </div>
 </div>
 
-<!-- MODAL PROFILE -->
 <div class="modal fade" id="profileModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -105,7 +101,6 @@ $foto_profil = $data['foto']
 
       <div class="modal-body px-4 pb-4">
 
-        <!-- FOTO PROFIL -->
         <div class="text-center mb-2">
           <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center position-relative overflow-hidden"
             style="width:100px;height:100px;">
@@ -120,7 +115,6 @@ $foto_profil = $data['foto']
 
           </div>
 
-          <!-- BUTTON EDIT FOTO -->
           <form action="../process/update_foto_profil.php" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="id_user" value="<?= $data['id_user'] ?>">
 
@@ -135,7 +129,6 @@ $foto_profil = $data['foto']
         </div>
 
 
-        <!-- DATA USER -->
         <div class="text-center mb-4">
           <h5 class="fw-bold fs-2"><?= $data['nama'] ?></h5>
           <small class="text-muted"><?= $data['username'] ?></small>
