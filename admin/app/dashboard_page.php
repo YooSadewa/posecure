@@ -427,8 +427,8 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
                 <th>Username</th>
                 <th>Kecamatan</th>
                 <th>Kelurahan</th>
-                <th>RT</th>
                 <th>RW</th>
+                <th>RT</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -444,8 +444,8 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
                     <td><?= htmlspecialchars($row['username']); ?></td>
                     <td><?= htmlspecialchars($row['kecamatan']); ?></td>
                     <td><?= htmlspecialchars($row['kelurahan']); ?></td>
-                    <td><?= htmlspecialchars($row['no_rt']); ?></td>
                     <td><?= htmlspecialchars($row['no_rw']); ?></td>
+                    <td><?= htmlspecialchars($row['no_rt']); ?></td>
                     <td>
                       <div class="d-flex gap-1">
                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modal_edit<?= $row['id_user']; ?>">
@@ -505,12 +505,12 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
                               <input type="text" name="kelurahan" class="form-control" value="<?= $row['kelurahan']; ?>" aria-label="kelurahan" required />
                             </div>
                             <div class="input-group mb-3">
-                              <span class="input-group-text label-width" id="rt">RT <span class="text-danger ms-1">*</span></span>
-                              <input type="text" name="rt" class="form-control" value="<?= $row['no_rt']; ?>" aria-label="rt" required />
-                            </div>
-                            <div class="input-group mb-3">
                               <span class="input-group-text label-width" id="rw">RW <span class="text-danger ms-1">*</span></span>
                               <input type="text" name="rw" class="form-control" value="<?= $row['no_rw']; ?>" aria-label="rw" required />
+                            </div>
+                            <div class="input-group mb-3">
+                              <span class="input-group-text label-width" id="rt">RT <span class="text-danger ms-1">*</span></span>
+                              <input type="text" name="rt" class="form-control" value="<?= $row['no_rt']; ?>" aria-label="rt" required />
                             </div>
                           </div>
                           <div class="modal-footer">
@@ -622,12 +622,12 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
               <input type="text" class="form-control" id="kelurahan" name="kelurahan" aria-label="kelurahan" required />
             </div>
             <div class="input-group mb-3">
-              <span class="input-group-text label-width" id="rt">RT <span class="text-danger ms-1">*</span></span>
-              <input type="text" class="form-control" id="rt" name="rt" aria-label="rt" required />
-            </div>
-            <div class="input-group mb-3">
               <span class="input-group-text label-width" id="rw">RW <span class="text-danger ms-1">*</span></span>
               <input type="text" class="form-control" id="rw" name="rw" aria-label="rw" required />
+            </div>
+            <div class="input-group mb-3">
+              <span class="input-group-text label-width" id="rt">RT <span class="text-danger ms-1">*</span></span>
+              <input type="text" class="form-control" id="rt" name="rt" aria-label="rt" required />
             </div>
           </div>
           <div class="modal-footer">
