@@ -423,6 +423,7 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
             <thead>
               <tr>
                 <th>No.</th>
+                <th>Nama</th>
                 <th>Username</th>
                 <th>Kecamatan</th>
                 <th>Kelurahan</th>
@@ -439,6 +440,7 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
               ?>
                   <tr>
                     <td><?= $no++; ?></td>
+                    <td><?= htmlspecialchars($row['nama']); ?></td>
                     <td><?= htmlspecialchars($row['username']); ?></td>
                     <td><?= htmlspecialchars($row['kecamatan']); ?></td>
                     <td><?= htmlspecialchars($row['kelurahan']); ?></td>
