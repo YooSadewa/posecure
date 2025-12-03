@@ -12,17 +12,14 @@ if ($_SESSION['role'] !== 'admin') {
   exit;
 }
 
-// total petugas
 include '../../koneksi_database.php';
 $query_total_petugas = "SELECT COUNT(*) as total FROM user WHERE role = 'petugas_keamanan'";
 $total_petugas = mysqli_fetch_assoc(mysqli_query($conn, $query_total_petugas))['total'];
 
-// Pagination
 $jumlah_per_halaman = 10;
 $halaman_aktif = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
 $awal_data = ($jumlah_per_halaman * $halaman_aktif) - $jumlah_per_halaman;
 
-// search
 $search_keyword = "";
 $search_query = "";
 
@@ -35,7 +32,6 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
   )";
 }
 
-// total data pagination
 $query_count_data = "SELECT COUNT(*) AS total
                       FROM user u
                       JOIN petugas_keamanan p ON u.id_user = p.id_user
@@ -45,11 +41,9 @@ $total_data = mysqli_fetch_assoc(mysqli_query($conn, $query_count_data))['total'
 
 $jumlah_halaman = ceil($total_data / $jumlah_per_halaman);
 
-// tabel
-$query_table = "SELECT u.id_user, u.username, u.nama, a.kecamatan, a.kelurahan, a.no_rt, a.no_rw FROM user u JOIN petugas_keamanan p ON u.id_user = p.id_user JOIN alamat a ON p.id_alamat = a.id_alamat WHERE u.role = 'petugas_keamanan' $search_query ORDER BY u.username ASC LIMIT $awal_data, $jumlah_per_halaman";
+$query_table = "SELECT u.id_user, u.username, u.nama, a.kecamatan, a.kelurahan, a.no_rt, a.no_rw, p.status_keaktifan FROM user u JOIN petugas_keamanan p ON u.id_user = p.id_user JOIN alamat a ON p.id_alamat = a.id_alamat WHERE u.role = 'petugas_keamanan' $search_query ORDER BY u.username ASC LIMIT $awal_data, $jumlah_per_halaman";
 $result_table = mysqli_query($conn, $query_table);
 
-// profile admin
 $username = $_SESSION['username'];
 $nama = $_SESSION['nama'];
 $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHERE id_user = '{$_SESSION['id_user']}'"))['no_telp'];
@@ -429,6 +423,7 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
                 <th>Kelurahan</th>
                 <th>RW</th>
                 <th>RT</th>
+                <th>Status Keaktifan</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -446,6 +441,19 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
                     <td><?= htmlspecialchars($row['kelurahan']); ?></td>
                     <td><?= htmlspecialchars($row['no_rw']); ?></td>
                     <td><?= htmlspecialchars($row['no_rt']); ?></td>
+                    <td>
+                      <?php
+                      $status = htmlspecialchars($row['status_keaktifan']);
+
+                      if ($status === 'aktif') {
+                        echo '<span class="badge bg-success px-5 py-2">Aktif</span>';
+                      } elseif ($status === 'cuti') {
+                        echo '<span class="badge bg-warning text-dark px-5 py-2">Cuti</span>';
+                      } else {
+                        echo '<span class="badge bg-secondary px-5 py-2">' . $status . '</span>';
+                      }
+                      ?>
+                    </td>
                     <td>
                       <div class="d-flex gap-1">
                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modal_edit<?= $row['id_user']; ?>">
@@ -489,28 +497,35 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
                             <input type="hidden" name="id_user" value="<?= $row['id_user']; ?>">
 
                             <div class="input-group mb-3">
-                              <span class="input-group-text label-width" id="username">Username <span class="text-danger ms-1">*</span></span>
+                              <span class="input-group-text label-width" style="min-width: 166px;" id="username">Username <span class="text-danger ms-1">*</span></span>
                               <input type="text" name="username" class="form-control" value="<?= $row['username']; ?>" aria-label="username" required />
                             </div>
                             <div class="input-group mb-3">
-                              <span class="input-group-text label-width" id="nama">Nama<span class="text-danger ms-1">*</span></span>
+                              <span class="input-group-text label-width" style="min-width: 166px;" id="nama">Nama<span class="text-danger ms-1">*</span></span>
                               <input type="text" name="nama" class="form-control" value="<?= $row['nama']; ?>" aria-label="nama" required />
                             </div>
                             <div class="input-group mb-3">
-                              <span class="input-group-text label-width" id="kecamatan">Kecamatan <span class="text-danger ms-1">*</span></span>
+                              <span class="input-group-text label-width" style="min-width: 166px;" id="kecamatan">Kecamatan <span class="text-danger ms-1">*</span></span>
                               <input type="text" name="kecamatan" class="form-control" value="<?= $row['kecamatan']; ?>" aria-label="kecamatan" required />
                             </div>
                             <div class="input-group mb-3">
-                              <span class="input-group-text label-width" id="kelurahan">Kelurahan <span class="text-danger ms-1">*</span></span>
+                              <span class="input-group-text label-width" style="min-width: 166px;" id="kelurahan">Kelurahan <span class="text-danger ms-1">*</span></span>
                               <input type="text" name="kelurahan" class="form-control" value="<?= $row['kelurahan']; ?>" aria-label="kelurahan" required />
                             </div>
                             <div class="input-group mb-3">
-                              <span class="input-group-text label-width" id="rw">RW <span class="text-danger ms-1">*</span></span>
+                              <span class="input-group-text label-width" style="min-width: 166px;" id="rw">RW <span class="text-danger ms-1">*</span></span>
                               <input type="text" name="rw" class="form-control" value="<?= $row['no_rw']; ?>" aria-label="rw" required />
                             </div>
                             <div class="input-group mb-3">
-                              <span class="input-group-text label-width" id="rt">RT <span class="text-danger ms-1">*</span></span>
+                              <span class="input-group-text label-width" style="min-width: 166px;" id="rt">RT <span class="text-danger ms-1">*</span></span>
                               <input type="text" name="rt" class="form-control" value="<?= $row['no_rt']; ?>" aria-label="rt" required />
+                            </div>
+                            <div class="input-group mb-3">
+                              <span class="input-group-text" style="min-width: 160px;" id="status_keaktifan">Status Keaktifan <span class="text-danger ms-1">*</span></span>
+                              <select class="form-select" name="status_keaktifan" aria-label="status_keaktifan" required>
+                                <option value="aktif" <?= $row['status_keaktifan'] === 'aktif' ? 'selected' : ''; ?>>Aktif</option>
+                                <option value="cuti" <?= $row['status_keaktifan'] === 'cuti' ? 'selected' : ''; ?>>Cuti</option>
+                              </select>
                             </div>
                           </div>
                           <div class="modal-footer">

@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $kelurahan = mysqli_real_escape_string($conn, $_POST['kelurahan']);
   $rt        = mysqli_real_escape_string($conn, $_POST['rt']);
   $rw        = mysqli_real_escape_string($conn, $_POST['rw']);
+  $status_keaktifan = mysqli_real_escape_string($conn, $_POST['status_keaktifan']);
 
   $update_user = mysqli_query($conn, "UPDATE user SET nama = '$nama', username = '$username' WHERE id_user = '$id_user'");
 
@@ -23,6 +24,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       'icon' => 'error',
       'title' => 'Gagal!',
       'text' => 'Gagal mengupdate data petugas: ' . mysqli_error($conn)
+    ];
+    header("Location: ../app/dashboard_page.php");
+    exit;
+  }
+
+  // Update status keaktifan di tabel petugas_keamanan
+  $update_status = mysqli_query($conn, "UPDATE petugas_keamanan SET status_keaktifan = '$status_keaktifan' WHERE id_user = '$id_user'");
+
+  if (!$update_status) {
+    $_SESSION['alert'] = [
+      'icon' => 'error',
+      'title' => 'Gagal!',
+      'text' => 'Gagal mengupdate status keaktifan: ' . mysqli_error($conn)
     ];
     header("Location: ../app/dashboard_page.php");
     exit;
