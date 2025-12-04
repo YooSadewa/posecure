@@ -29,7 +29,6 @@ $countQuery = mysqli_query($conn, "
 $countData = mysqli_fetch_assoc($countQuery);
 $totalData = $countData['total'];
 
-// Hitung total halaman
 $totalPage = max(1, ceil($totalData / $limit));
 
 $query_warga = "
@@ -123,7 +122,6 @@ if ($result_warga && mysqli_num_rows($result_warga) > 0) {
         </div>
       </div>
 
-      <!-- Tabel -->
       <div id="tableContainer" class="table-responsive">
         <table class="table table-bordered table-striped table-hover align-middle">
           <thead class="table-light">
@@ -141,7 +139,6 @@ if ($result_warga && mysqli_num_rows($result_warga) > 0) {
             <?php
             $hariList = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 
-            // Ambil data berdasarkan hari DENGAN LIMIT dan OFFSET (per-hari & per-id_alamat)
             $data = [];
             foreach ($hariList as $h) {
               $h_esc = mysqli_real_escape_string($conn, $h);
@@ -188,7 +185,6 @@ if ($result_warga && mysqli_num_rows($result_warga) > 0) {
         </table>
       </div>
 
-      <!-- Pagination -->
       <div class="d-flex justify-content-end mt-3 pe-3">
         <nav>
         <ul class="pagination mb-0">
@@ -217,7 +213,6 @@ if ($result_warga && mysqli_num_rows($result_warga) > 0) {
   </div>
   
 
-  <!-- Modal Tambah -->
   <form action="../process/jadwal_tambah_warga_proses.php" method="POST">
     <input type="hidden" name="id_alamat" value="<?= htmlspecialchars($id_alamat) ?>">
     <div class="modal fade" id="modal_tambah" tabindex="-1" aria-labelledby="modal_tambah_label" aria-hidden="true">

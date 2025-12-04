@@ -60,6 +60,12 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
             justify-content: left;
             font-weight: 500;
         }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
     </style>
 </head>
 
@@ -149,27 +155,27 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
                                                 <input type="hidden" name="id_user" id="edit_id_user" value="<?= $data['id_user']; ?>">
 
                                                 <div class="input-group mb-3">
-                                                    <span class="input-group-text">Blok Rumah <span class="text-danger ms-2">*</span></span>
-                                                    <input type="text" class="form-control" name="blok_rumah" id="edit_blok_rumah" value="<?= $data['blok_rumah']; ?>">
-                                                </div>
-
-                                                <div class="input-group mb-3">
                                                     <span class="input-group-text">Nomor KK <span class="text-danger ms-2">*</span></span>
-                                                    <input type="text" class="form-control" name="no_kk" id="edit_no_kk" value="<?= $data['no_kk']; ?>">
+                                                    <input type="number" class="form-control" name="no_kk" id="edit_no_kk" value="<?= $data['no_kk']; ?>">
                                                 </div>
-
+                                                
                                                 <div class="input-group mb-3">
                                                     <span class="input-group-text">Nama <span class="text-danger ms-2">*</span></span>
                                                     <input type="text" class="form-control" name="nama" id="edit_nama" value="<?= $data['nama']; ?>">
                                                 </div>
 
                                                 <div class="input-group mb-3">
+                                                    <span class="input-group-text">Blok Rumah <span class="text-danger ms-2">*</span></span>
+                                                    <input type="text" class="form-control" name="blok_rumah" id="edit_blok_rumah" value="<?= $data['blok_rumah']; ?>">
+                                                </div>
+                                                
+                                                <div class="input-group mb-3">
                                                     <span class="input-group-text">No Telp <span class="text-danger ms-2">*</span></span>
-                                                    <input type="text" class="form-control" name="no_telp" id="edit_no_telp" value="<?= $data['no_telp']; ?>">
+                                                    <input type="number" class="form-control" name="no_telp" id="edit_no_telp" value="<?= $data['no_telp']; ?>">
                                                 </div>
 
                                                 <div class="input-group mb-3">
-                                                    <span class="input-group-text">Foto <span class="text-danger ms-2">*</span></span>
+                                                    <span class="input-group-text">Foto Profil<span class="text-danger ms-2">*</span></span>
                                                     <input type="file" class="form-control" name="foto" id="edit_foto">
                                                 </div>
 
@@ -250,7 +256,7 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
                     <div class="modal-body">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Nomor KK <span class="text-danger ms-2">*</span></span>
-                            <input type="text" class="form-control" name="no_kk" required>
+                            <input type="number" class="form-control" name="no_kk" required>
                         </div>
 
                         <div class="input-group mb-3">
@@ -265,7 +271,7 @@ if ($_SESSION['role'] !== 'petugas_keamanan') {
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">No Telp <span class="text-danger ms-2">*</span></span>
-                            <input type="text" class="form-control" name="no_telp" required>
+                            <input type="number" class="form-control" name="no_telp" required>
                         </div>
 
                         <div class="input-group mb-3">

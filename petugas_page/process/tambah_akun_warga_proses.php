@@ -49,9 +49,16 @@ if (!$data) {
 
 $blok_rumah = $_POST['blok_rumah'];
 
-/* Cek blok rumah apakah sudah ada  */
 $cekBlok = mysqli_query($conn, "
     SELECT blok_rumah FROM warga WHERE blok_rumah = '$blok_rumah'
+");
+
+$cekNik = mysqli_query($conn, "
+    SELECT no_kk FROM warga WHERE no_kk = '$no_kk'
+");
+
+$cekNoTelp = mysqli_query($conn, "
+    SELECT no_telp FROM user WHERE no_telp = '$no_telp'
 ");
 
 if (mysqli_num_rows($cekBlok) > 0) {
@@ -59,6 +66,26 @@ if (mysqli_num_rows($cekBlok) > 0) {
         'type' => 'error',
         'title' => 'Duplikat Blok!',
         'message' => 'Blok rumah sudah ada. Tidak dapat menambahkan data yang sama.'
+    ];
+    header("Location: ../app/daftar_akun_warga.php");
+    exit;
+}
+
+if (mysqli_num_rows($cekNik) > 0) {
+    $_SESSION['alert'] = [
+        'type' => 'error',
+        'title' => 'Duplikat No KK!',
+        'message' => 'Nomor KK sudah ada. Tidak dapat menambahkan data yang sama.'
+    ];
+    header("Location: ../app/daftar_akun_warga.php");
+    exit;
+}
+
+if (mysqli_num_rows($cekNoTelp) > 0) {
+    $_SESSION['alert'] = [
+        'type' => 'error',
+        'title' => 'Duplikat No Telp!',
+        'message' => 'Nomor telepon sudah ada. Tidak dapat menambahkan data yang sama.'
     ];
     header("Location: ../app/daftar_akun_warga.php");
     exit;
