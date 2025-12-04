@@ -149,26 +149,54 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'warga') {
     </div>
 
     <script>
-        document.getElementById('tanggal').addEventListener('change', function() {
-            const jamInput = document.getElementById('jam');
-            const today = new Date().toISOString().split('T')[0];
+        const tanggalInput = document.getElementById('tanggal');
+        const jamInput = document.getElementById('jam');
 
-            if (this.value === today) {
+        // Fungsi untuk set maksimal jam
+        function setMaxJam() {
+            const tanggalDipilih = tanggalInput.value;
+            const hariIni = new Date().toISOString().split('T')[0];
 
+            if (tanggalDipilih === hariIni) {
                 const now = new Date();
-                jamInput.max = now.toTimeString().slice(0, 5);
+                const jamSekarang = now.getHours().toString().padStart(2, '0') + ':' +
+                    now.getMinutes().toString().padStart(2, '0');
+                jamInput.setAttribute('max', jamSekarang);
             } else {
 
                 jamInput.removeAttribute('max');
             }
+        }
+
+        // Validasi saat jam diinput
+        function validateJam() {
+            const tanggalDipilih = tanggalInput.value;
+            const hariIni = new Date().toISOString().split('T')[0];
+
+            if (tanggalDipilih === hariIni) {
+                const now = new Date();
+                const jamSekarang = now.getHours().toString().padStart(2, '0') + ':' +
+                    now.getMinutes().toString().padStart(2, '0');
+
+                if (jamInput.value > jamSekarang) {
+                    alert('Jam tidak boleh melebihi jam sekarang (' + jamSekarang + ')!');
+                    jamInput.value = jamSekarang;
+                }
+            }
+        }
+
+        // Event listeners
+        tanggalInput.addEventListener('change', function() {
+            setMaxJam();
+            jamInput.value = '';
         });
 
-        document.getElementById('jam').addEventListener('input', function() {
-            if (this.max && this.value > this.max) {
-                alert('Jam tidak boleh melebihi jam sekarang!');
-                this.value = this.max;
-            }
-        });
+        jamInput.addEventListener('change', validateJam);
+        jamInput.addEventListener('blur', validateJam);
+
+        if (tanggalInput.value) {
+            setMaxJam();
+        }
     </script>
 
     <?php include 'footer.php'; ?>
