@@ -1,14 +1,8 @@
 <?php
-// Sessions
 session_start();
 
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-  header("location: ../../petugas_page/app/login_page.php?pesan=belum_login");
-  exit;
-}
-
-if ($_SESSION['role'] !== 'admin') {
-  echo "Anda tidak memiliki akses ke halaman ini!";
+if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'admin') {
+  header("location: login_page.php");
   exit;
 }
 
@@ -117,6 +111,12 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
 
     #caretIcon.rotate-180 {
       transform: rotate(180deg);
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
   </style>
 </head>
@@ -514,11 +514,11 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
                             </div>
                             <div class="input-group mb-3">
                               <span class="input-group-text label-width" style="min-width: 166px;" id="rw">RW <span class="text-danger ms-1">*</span></span>
-                              <input type="text" name="rw" class="form-control" value="<?= $row['no_rw']; ?>" aria-label="rw" required />
+                              <input type="number" name="rw" class="form-control" value="<?= $row['no_rw']; ?>" aria-label="rw" required />
                             </div>
                             <div class="input-group mb-3">
                               <span class="input-group-text label-width" style="min-width: 166px;" id="rt">RT <span class="text-danger ms-1">*</span></span>
-                              <input type="text" name="rt" class="form-control" value="<?= $row['no_rt']; ?>" aria-label="rt" required />
+                              <input type="number" name="rt" class="form-control" value="<?= $row['no_rt']; ?>" aria-label="rt" required />
                             </div>
                             <div class="input-group mb-3">
                               <span class="input-group-text" style="min-width: 160px;" id="status_keaktifan">Status Keaktifan <span class="text-danger ms-1">*</span></span>
@@ -638,11 +638,11 @@ $no_telp = mysqli_fetch_assoc(mysqli_query($conn, "SELECT no_telp FROM user WHER
             </div>
             <div class="input-group mb-3">
               <span class="input-group-text label-width" id="rw">RW <span class="text-danger ms-1">*</span></span>
-              <input type="text" class="form-control" id="rw" name="rw" aria-label="rw" required />
+              <input type="number" class="form-control" id="rw" name="rw" aria-label="rw" required />
             </div>
             <div class="input-group mb-3">
               <span class="input-group-text label-width" id="rt">RT <span class="text-danger ms-1">*</span></span>
-              <input type="text" class="form-control" id="rt" name="rt" aria-label="rt" required />
+              <input type="number" class="form-control" id="rt" name="rt" aria-label="rt" required />
             </div>
           </div>
           <div class="modal-footer">

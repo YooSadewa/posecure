@@ -1,19 +1,9 @@
 <?php
 session_start();
-if (!isset($_SESSION['regenerated'])) {
-  session_regenerate_id(true);
-  $_SESSION['regenerated'] = true;
-}
-
 include '../../koneksi_database.php';
 
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-  header("location: login_page.php?pesan=belum_login");
-  exit;
-}
-
-if ($_SESSION['role'] !== 'petugas_keamanan') {
-  echo "Anda tidak memiliki akses ke halaman ini!";
+if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'petugas_keamanan') {
+  header("location: login_page.php");
   exit;
 }
 

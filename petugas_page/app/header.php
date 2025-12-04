@@ -4,9 +4,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include "../../koneksi_database.php";
 
-// Cek login dan role
-if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'petugas_keamanan') {
-  header("location: ../login/login_page.php?pesan=belum_login");
+if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'petugas_keamanan') {
+  header("location: login_page.php");
   exit;
 }
 

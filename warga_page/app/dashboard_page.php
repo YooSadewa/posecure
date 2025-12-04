@@ -2,7 +2,7 @@
 session_start();
 include '../../koneksi_database.php';
 
-if (!isset($_SESSION['id_user'])) {
+if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'warga') {
   header("location: login_page.php");
   exit;
 }
