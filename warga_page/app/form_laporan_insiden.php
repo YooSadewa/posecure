@@ -147,7 +147,30 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'warga') {
             </div>
         </div>
     </div>
-    
+
+    <script>
+        document.getElementById('tanggal').addEventListener('change', function() {
+            const jamInput = document.getElementById('jam');
+            const today = new Date().toISOString().split('T')[0];
+
+            if (this.value === today) {
+                // Hari ini: set max jam sekarang
+                const now = new Date();
+                jamInput.max = now.toTimeString().slice(0, 5);
+            } else {
+                // Hari lalu: bebas
+                jamInput.removeAttribute('max');
+            }
+        });
+
+        document.getElementById('jam').addEventListener('input', function() {
+            if (this.max && this.value > this.max) {
+                alert('Jam tidak boleh melebihi jam sekarang!');
+                this.value = this.max;
+            }
+        });
+    </script>
+
     <?php include 'footer.php'; ?>
 </body>
 
