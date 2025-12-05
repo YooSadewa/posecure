@@ -214,9 +214,9 @@ $hari = !empty($data['hari_ronda']) ? $data['hari_ronda'] : "Hari Ronda Belum Di
           <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center position-relative overflow-hidden"
             style="width:100px;height:100px;">
 
-            <?php if ($data['foto']) { ?>
+            <?php if ($user_data['foto']) { ?>
               <img id="previewImage"
-                src="../../assets/warga_img/profile_img/<?= $data['foto'] ?>"
+                src="../../assets/warga_img/profile_img/<?= $user_data['foto'] ?>"
                 class="w-100 h-100 object-fit-cover rounded-circle">
             <?php } else { ?>
               <i id="defaultIcon" class="fas fa-user fa-3x text-secondary"></i>
