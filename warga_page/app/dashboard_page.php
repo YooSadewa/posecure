@@ -62,7 +62,7 @@ $hariInggrisKeIndo = [
   'saturday' => 'Sabtu'
 ];
 
-$hariBesok = strtolower(date('l', strtotime('+1 day'))); 
+$hariBesok = strtolower(date('l', strtotime('+1 day')));
 
 $tampilkanAlert = false;
 $namaHariRonda = '';
@@ -95,6 +95,8 @@ if (!empty($hariRonda) && $hariRonda !== 'NULL') {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     * {
@@ -240,6 +242,27 @@ if (!empty($hariRonda) && $hariRonda !== 'NULL') {
 
   <?php include 'footer.php' ?>
 
+  <?php if (isset($_SESSION['alert'])): ?>
+    <script>
+      Swal.fire({
+        icon: '<?php echo $_SESSION['alert']['icon']; ?>',
+        title: '<?php echo $_SESSION['alert']['title']; ?>',
+        <?php if (isset($_SESSION['alert']['text'])): ?>
+          text: '<?php echo $_SESSION['alert']['text']; ?>',
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['alert']['timer'])): ?>
+          timer: <?php echo $_SESSION['alert']['timer']; ?>,
+          showConfirmButton: false
+        <?php else: ?>
+          confirmButtonColor: '#1E3A8A',
+          confirmButtonText: 'OK'
+        <?php endif; ?>
+      });
+    </script>
+    <?php unset($_SESSION['alert']); ?>
+  <?php endif; ?>
+
   <script>
     const dataInsiden = <?= json_encode($jumlahPerBulan); ?>;
 
@@ -289,19 +312,7 @@ if (!empty($hariRonda) && $hariRonda !== 'NULL') {
       window.location.href = "?year=" + year;
     }
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <?php if (isset($_SESSION['alert'])) : ?>
-      <script>
-          Swal.fire({
-              icon: '<?= $_SESSION['alert']['type'] ?>',
-              title: '<?= $_SESSION['alert']['title'] ?>',
-              text: '<?= $_SESSION['alert']['message'] ?>',
-              confirmButtonColor: '#1E3A8A'
-          });
-      </script>
-      <?php unset($_SESSION['alert']); ?>
-  <?php endif; ?>
-  
+
 </body>
 
 </html>

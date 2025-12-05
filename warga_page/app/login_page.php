@@ -1,3 +1,7 @@
+<?php
+session_start();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,6 +11,8 @@
     <title>Login Page</title>
     <link rel="stylesheet" href="../../assets/bootstrap/css/bootstrap.min.css">
     <script src="../../assets/bootstrap/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         * {
             font-family: "Poppins", sans-serif;
@@ -64,6 +70,26 @@
             </div>
         </div>
     </div>
+    <?php if (isset($_SESSION['alert'])): ?>
+        <script>
+            Swal.fire({
+                icon: '<?php echo $_SESSION['alert']['icon']; ?>',
+                title: '<?php echo $_SESSION['alert']['title']; ?>',
+                <?php if (isset($_SESSION['alert']['text'])): ?>
+                    text: '<?php echo $_SESSION['alert']['text']; ?>',
+                <?php endif; ?>
+
+                <?php if (isset($_SESSION['alert']['timer'])): ?>
+                    timer: <?php echo $_SESSION['alert']['timer']; ?>,
+                    showConfirmButton: false
+                <?php else: ?>
+                    confirmButtonColor: '#1E3A8A',
+                    confirmButtonText: 'OK'
+                <?php endif; ?>
+            });
+        </script>
+        <?php unset($_SESSION['alert']); ?>
+    <?php endif; ?>
 </body>
 
 </html>
