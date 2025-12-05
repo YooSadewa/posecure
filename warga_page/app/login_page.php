@@ -71,22 +71,26 @@ session_start();
         </div>
     </div>
     <?php if (isset($_SESSION['alert'])): ?>
-        <script>
-            Swal.fire({
-                icon: '<?php echo $_SESSION['alert']['icon']; ?>',
-                title: '<?php echo $_SESSION['alert']['title']; ?>',
-                <?php if (isset($_SESSION['alert']['text'])): ?>
-                    text: '<?php echo $_SESSION['alert']['text']; ?>',
-                <?php endif; ?>
+        <?php
+        $alertConfig = [
+            'icon' => $_SESSION['alert']['icon'],
+            'title' => $_SESSION['alert']['title']
+        ];
 
-                <?php if (isset($_SESSION['alert']['timer'])): ?>
-                    timer: <?php echo $_SESSION['alert']['timer']; ?>,
-                    showConfirmButton: false
-                <?php else: ?>
-                    confirmButtonColor: '#1E3A8A',
-                    confirmButtonText: 'OK'
-                <?php endif; ?>
-            });
+        if (isset($_SESSION['alert']['text'])) {
+            $alertConfig['text'] = $_SESSION['alert']['text'];
+        }
+
+        if (isset($_SESSION['alert']['timer'])) {
+            $alertConfig['timer'] = $_SESSION['alert']['timer'];
+            $alertConfig['showConfirmButton'] = false;
+        } else {
+            $alertConfig['confirmButtonColor'] = '#1E3A8A';
+            $alertConfig['confirmButtonText'] = 'OK';
+        }
+        ?>
+        <script>
+            Swal.fire(<?php echo json_encode($alertConfig); ?>);
         </script>
         <?php unset($_SESSION['alert']); ?>
     <?php endif; ?>
