@@ -151,27 +151,27 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'petugas_keamanan') {
 
                                                 <div class="input-group mb-3">
                                                     <span class="input-group-text">Nomor KK <span class="text-danger ms-2">*</span></span>
-                                                    <input type="number" class="form-control" name="no_kk" id="edit_no_kk" value="<?= $data['no_kk']; ?>">
+                                                    <input type="number" class="form-control" name="no_kk" id="edit_no_kk" value="<?= $data['no_kk']; ?>" required>
                                                 </div>
                                                 
                                                 <div class="input-group mb-3">
                                                     <span class="input-group-text">Nama <span class="text-danger ms-2">*</span></span>
-                                                    <input type="text" class="form-control" name="nama" id="edit_nama" value="<?= $data['nama']; ?>">
+                                                    <input type="text" class="form-control" name="nama" id="edit_nama" value="<?= $data['nama']; ?>" required>
                                                 </div>
 
                                                 <div class="input-group mb-3">
                                                     <span class="input-group-text">Blok Rumah <span class="text-danger ms-2">*</span></span>
-                                                    <input type="text" class="form-control" name="blok_rumah" id="edit_blok_rumah" value="<?= $data['blok_rumah']; ?>">
+                                                    <input type="text" class="form-control" name="blok_rumah" id="edit_blok_rumah" value="<?= $data['blok_rumah']; ?>" required>
                                                 </div>
                                                 
                                                 <div class="input-group mb-3">
                                                     <span class="input-group-text">No Telp <span class="text-danger ms-2">*</span></span>
-                                                    <input type="number" class="form-control" name="no_telp" id="edit_no_telp" value="<?= $data['no_telp']; ?>">
+                                                    <input type="number" class="form-control" name="no_telp" id="edit_no_telp" value="<?= $data['no_telp']; ?>" required>
                                                 </div>
 
                                                 <div class="input-group mb-3">
                                                     <span class="input-group-text">Foto Profil<span class="text-danger ms-2">*</span></span>
-                                                    <input type="file" class="form-control" name="foto" id="edit_foto">
+                                                    <input type="file" class="form-control" name="foto" id="edit_foto" accept=".jpg, .jpeg, .png">
                                                 </div>
 
                                             </div>
@@ -271,7 +271,7 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'petugas_keamanan') {
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Foto Profil <span class="text-danger ms-2">*</span></span>
-                            <input type="file" class="form-control" name="foto" required>
+                            <input type="file" class="form-control" name="foto" accept=".jpg, .jpeg, .png" required>
                         </div>
 
                     </div>
