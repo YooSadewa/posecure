@@ -20,9 +20,9 @@ $result_cek = $stmt_cek->get_result();
 
 if ($result_cek->num_rows > 0) {
     $_SESSION['alert'] = [
-        'type' => 'info',
+        'icon' => 'info',
         'title' => 'Sudah Absen',
-        'message' => 'Anda sudah melakukan absensi hari ini!'
+        'text' => 'Anda sudah melakukan absensi hari ini!'
     ];
     $stmt_cek->close();
     $conn->close();
@@ -54,9 +54,9 @@ $hariIniIndo = $hariMap[$hariIni];
 
 if (strtolower($hariIniIndo) !== strtolower($hari_ronda)) {
     $_SESSION['alert'] = [
-        'type' => 'warning',
+        'icon' => 'warning',
         'title' => 'Bukan Jadwal Anda',
-        'message' => 'Hari ini (' . ucfirst($hariIniIndo) . ') bukan jadwal ronda Anda. Jadwal Anda: ' . ucfirst($hari_ronda)
+        'text' => 'Hari ini (' . ucfirst($hariIniIndo) . ') bukan jadwal ronda Anda. Jadwal Anda: ' . ucfirst($hari_ronda)
     ];
     header("location: dashboard_page.php");
     exit;
@@ -81,6 +81,8 @@ if (strtolower($hariIniIndo) !== strtolower($hari_ronda)) {
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
     <link href="../../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
     <style>
         .required {
@@ -276,7 +278,6 @@ if (strtolower($hariIniIndo) !== strtolower($hari_ronda)) {
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const formAbsensi = document.getElementById("formAbsensi");
@@ -403,9 +404,9 @@ if (strtolower($hariIniIndo) !== strtolower($hari_ronda)) {
     <?php if (isset($_SESSION['alert'])) : ?>
        <script>
         Swal.fire({
-            icon: '<?= $_SESSION['alert']['type'] ?>',
+            icon: '<?= $_SESSION['alert']['icon'] ?>',
             title: '<?= $_SESSION['alert']['title'] ?>',
-            text: '<?= $_SESSION['alert']['message'] ?>',
+            text: '<?= $_SESSION['alert']['text'] ?>',
             confirmButtonColor: '#1E3A8A'
         });
     </script>

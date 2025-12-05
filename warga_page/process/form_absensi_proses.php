@@ -15,9 +15,9 @@ if (isset($_POST['foto_data'])) {
     // Validasi foto
    if (empty($fotoData)) {
     $_SESSION['alert'] = [
-        'type' => 'warning',
+        'icon' => 'warning',
         'title' => 'Foto Tidak Ada',
-        'message' => 'Foto absensi wajib diambil!'
+        'text' => 'Foto absensi wajib diambil!'
     ];
     header("Location: ../app/form_absensi.php");
     exit;
@@ -28,9 +28,9 @@ if (isset($_POST['foto_data'])) {
 
     if (!$stmt_cek) {
         $_SESSION['alert'] = [
-            'type' => 'error',
+            'icon' => 'error',
             'title' => 'Error Database',
-            'message' => 'Terjadi kesalahan sistem!'
+            'text' => 'Terjadi kesalahan sistem!'
         ];
         header("Location: ../app/form_absensi.php");
         exit;
@@ -42,9 +42,9 @@ if (isset($_POST['foto_data'])) {
 
     if ($result_cek->num_rows > 0) {
         $_SESSION['alert'] = [
-            'type' => 'info',
+            'icon' => 'info',
             'title' => 'Sudah Absen',
-            'message' => 'Anda sudah melakukan absensi hari ini!'
+            'text' => 'Anda sudah melakukan absensi hari ini!'
         ];
         $stmt_cek->close();
         $conn->close();
@@ -84,9 +84,9 @@ if (isset($_POST['foto_data'])) {
 
             if ($hasil) {  
                 $_SESSION['alert'] = [
-                    'type' => 'success',  
+                    'icon' => 'success',  
                     'title' => 'Berhasil!',
-                    'message' => 'Absensi berhasil disimpan!'
+                    'text' => 'Absensi berhasil disimpan!'
                 ];
                 $stmt->close();
                 $conn->close();
@@ -99,9 +99,9 @@ if (isset($_POST['foto_data'])) {
                 }
                 
                 $_SESSION['alert'] = [
-                    'type' => 'error', 
+                    'icon' => 'error', 
                     'title' => 'Gagal Menyimpan',
-                    'message' => 'Gagal menyimpan data ke database!'
+                    'text' => 'Gagal menyimpan data ke database!'
                 ];
                 $stmt->close();
                 $conn->close();
@@ -115,9 +115,9 @@ if (isset($_POST['foto_data'])) {
             }
             
             $_SESSION['alert'] = [
-                'type' => 'error',
+                'icon' => 'error',
                 'title' => 'Error Database',
-                'message' => 'Error prepare statement!'
+                'text' => 'Error prepare statement!'
             ];
             $conn->close();
             header("Location: ../app/form_absensi.php");
@@ -126,9 +126,9 @@ if (isset($_POST['foto_data'])) {
         } else {
         
             $_SESSION['alert'] = [
-            'type' => 'error',
+            'icon' => 'error',
             'title' => 'Gagal Menyimpan Foto',
-            'message' => 'Tidak dapat menyimpan file foto ke server!'
+            'text' => 'Tidak dapat menyimpan file foto ke server!'
             ];
             $conn->close();
             header("Location: ../app/form_absensi.php");
