@@ -6,6 +6,10 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'warga') {
     header("location: login_page.php");
     exit;
 }
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 ?>
 
 <!DOCTYPE html>
@@ -62,6 +66,7 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'warga') {
 
                     <div class="card-body p-4 p-md-5">
                         <form id="formLaporanInsiden" action="../process/laporan_insiden_proses.php" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token']; ?>">
                             <input type="hidden" name="id_user" value="<?= $_SESSION['id_user']; ?>">
                             <div class="row g-4">
                                 <div class="col-md-6">

@@ -7,11 +7,27 @@ if (!isset($_SESSION['id_user'])) {
     exit;
 }
 
-$id_user       = $_SESSION['id_user']; 
+if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+    $_SESSION['alert'] = [
+        'type' => 'error',
+        'title' => 'Gagal!',
+        'message' => 'Invalid CSRF token!'
+    ];
+    header("Location: ../app/form_laporan_insiden.php");
+    exit;
+}
+unset($_SESSION['csrf_token']);
+
+$id_user       = $_SESSION['id_user'];
 $tanggal       = $_POST['tanggal'];
 $jam           = $_POST['jam'];
 $jenis_insiden = $_POST['jenis_insiden'];
 $keterangan    = $_POST['keterangan'];
+
+$tanggal       = mysqli_real_escape_string($conn, $tanggal);
+$jam           = mysqli_real_escape_string($conn, $jam);
+$jenis_insiden = htmlspecialchars(mysqli_real_escape_string($conn, $jenis_insiden), ENT_QUOTES, 'UTF-8');
+$keterangan    = htmlspecialchars(mysqli_real_escape_string($conn, trim($keterangan)), ENT_QUOTES, 'UTF-8');
 
 $getID = mysqli_query($conn, "
     SELECT id_insiden 
@@ -32,6 +48,30 @@ if (!$data) {
 
 $namaFoto = null;
 if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
+    if ($_FILES['foto']['size'] > 5 * 1024 * 1024) {
+        $_SESSION['alert'] = [
+            'type' => 'error',
+            'title' => 'Gagal!',
+            'message' => 'Ukuran foto terlalu besar! Maksimal 5MB.'
+        ];
+        header("Location: ../app/form_laporan_insiden.php");
+        exit;
+    }
+
+    $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($finfo, $_FILES['foto']['tmp_name']);
+    finfo_close($finfo);
+    if (!in_array($mimeType, $allowedTypes)) {
+        $_SESSION['alert'] = [
+            'type' => 'error',
+            'title' => 'Gagal!',
+            'message' => 'Format foto tidak valid! Hanya JPG, JPEG, dan PNG.'
+        ];
+        header("Location: ../app/form_laporan_insiden.php");
+        exit;
+    }
+
     $foto_tmp  = $_FILES['foto']['tmp_name'];
     $foto_ext  = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
 
@@ -59,7 +99,7 @@ $queryInsiden = mysqli_query($conn, "
 ");
 
 // Jika Berhasil
-if ($queryInsiden) { 
+if ($queryInsiden) {
     $_SESSION['alert'] = [
         'type' => 'success',
         'title' => 'Berhasil!',
@@ -79,4 +119,3 @@ $_SESSION['alert'] = [
 
 header("Location: ../app/laporan_insiden_page.php");
 exit;
-?>
