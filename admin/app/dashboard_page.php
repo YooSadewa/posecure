@@ -2,7 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'admin') {
-  header("location: login_page.php");
+  header("location: ../../petugas_page/app/login_page.php?pesan=belum_login");
   exit;
 }
 
