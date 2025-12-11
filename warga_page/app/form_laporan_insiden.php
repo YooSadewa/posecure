@@ -10,6 +10,16 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'warga') {
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
+
+// Ambil data alamat berdasarkan id_alamat dari session
+$id_alamat = $_SESSION['id_alamat'];
+$query = mysqli_query($conn, "SELECT kecamatan, kelurahan, no_rt, no_rw FROM alamat WHERE id_alamat = '$id_alamat'");
+$dataAlamat = mysqli_fetch_assoc($query);
+
+$kecamatan = $dataAlamat['kecamatan'];
+$kelurahan = $dataAlamat['kelurahan'];
+$rt = $dataAlamat['no_rt'];
+$rw = $dataAlamat['no_rw'];
 ?>
 
 <!DOCTYPE html>
@@ -61,7 +71,7 @@ if (empty($_SESSION['csrf_token'])) {
                             <i class="bi bi-exclamation-triangle me-2"></i>
                             Form Laporan Insiden
                         </h4>
-                        <p class="mb-0 opacity-75 small">Laporkan kejadian insiden yang terjadi di lingkungan Kecamatan Dummy, Kelurahan Dummy, RT 00 RW 00</p>
+                        <p class="mb-0 opacity-75 small">Laporkan kejadian insiden yang terjadi di lingkungan Kecamatan <?= $kecamatan; ?>, Kelurahan <?= $kelurahan; ?>, RT <?= $rt; ?> RW <?= $rw; ?></p>
                     </div>
 
                     <div class="card-body p-4 p-md-5">
