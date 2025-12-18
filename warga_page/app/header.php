@@ -225,14 +225,14 @@ $hari = !empty($data['hari_ronda']) ? $data['hari_ronda'] : "Hari Ronda Belum Di
           </div>
 
           <form action="../process/update_foto_profil.php" method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="id_user" value="<?= $data['id_user'] ?>">
+            <input type="hidden" name="id_user" value="<?= $_SESSION['id_user'] ?>">
 
             <a href="#" onclick="document.getElementById('editFotoInput').click(); return false;"
               class="d-block mt-2 text-decoration-none text-primary fw-medium">
               Edit Foto Profil
             </a>
 
-            <input type="file" id="editFotoInput" name="foto_baru" accept="image/*" hidden
+            <input type="file" id="editFotoInput" name="foto_baru" accept="image/jpg, image/jpg, .png, .jpeg, .jpg" hidden
               onchange="this.form.submit()">
           </form>
         </div>
