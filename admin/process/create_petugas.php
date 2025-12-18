@@ -16,6 +16,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $rw = mysqli_real_escape_string($conn, $_POST['rw']);
   $password_hash = password_hash($username, PASSWORD_DEFAULT);
 
+  // cek username jika ada ==========================================
+
+  $cek_username = mysqli_query($conn, "SELECT username FROM user WHERE username = '$username'");
+
+  if (mysqli_num_rows($cek_username) > 0) {
+    $_SESSION['alert'] = [
+      'icon' => 'warning',
+      'title' => 'Gagal!',
+      'text' => 'Username sudah terpakai! Silakan gunakan username lain.'
+    ];
+    header("Location: ../app/dashboard_page.php");
+    exit;
+  }
+
   // alamat ==========================================
   $id_alamat = "";
 
