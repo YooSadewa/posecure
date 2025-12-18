@@ -232,7 +232,7 @@ $hari = !empty($data['hari_ronda']) ? $data['hari_ronda'] : "Hari Ronda Belum Di
               Edit Foto Profil
             </a>
 
-            <input type="file" id="editFotoInput" name="foto_baru" accept="image/*" hidden
+            <input type="file" id="editFotoInput" name="foto_baru" accept="image/jpg, image/jpg, .png, .jpeg, .jpg" hidden
               onchange="this.form.submit()">
           </form>
         </div>
