@@ -2,7 +2,6 @@
 session_start();
 include "../../koneksi_database.php";
 
-// Proteksi akses (sesuaikan role jika perlu)
 if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'petugas_keamanan') {
     header("Location: ../app/login.php");
     exit;
@@ -16,9 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $blok_rumah = mysqli_real_escape_string($conn, $_POST['blok_rumah']);
     $no_kk      = mysqli_real_escape_string($conn, $_POST['no_kk']);
 
-    /* =====================
-       UPLOAD FOTO (OPSIONAL)
-       ===================== */
+   // upload foto
     $fotoQuery = "";
 
     if (isset($_FILES['foto']) && $_FILES['foto']['name'] !== '') {
@@ -86,9 +83,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $fotoQuery = ", foto='$filename'";
     }
 
-    /* =====================
-       UPDATE TABEL USER
-       ===================== */
     $updateUser = mysqli_query($conn, "
         UPDATE user SET
             nama='$nama',
@@ -101,9 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die("Error update user: " . mysqli_error($conn));
     }
 
-    /* =====================
-       UPDATE TABEL WARGA
-       ===================== */
+
     $updateWarga = mysqli_query($conn, "
         UPDATE warga SET
             no_kk='$no_kk',
