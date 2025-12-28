@@ -1,9 +1,9 @@
-<?php 
-session_start(); // untuk mengaktifkan atau memulai session.
-session_unset(); // untuk menghapus semua data session.
-session_destroy(); // untuk menghapus session sepenuhnya dari server.
+<?php
+session_start();
+session_unset();
+session_destroy();
 
-session_start(); // memulai session baru yang kosong.
+session_start();
 
 $_SESSION['alert'] = [
         'icon' => 'success',
